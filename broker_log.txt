@@ -1,0 +1,1839 @@
+warning: virtual workspace defaulting to `resolver = "1"` despite one or more workspace members being on edition 2021 which implies `resolver = "2"`
+  |
+  = note: to keep the current resolver, specify `workspace.resolver = "1"` in the workspace root's manifest
+  = note: to use the edition 2021 resolver, specify `workspace.resolver = "2"` in the workspace root's manifest
+  = note: for more details see https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions
+warning: unused variable: `si`
+   --> mqtt-core\src\common.rs:159:14
+    |
+159 |         for (si, seg) in self.segments.iter().enumerate() {
+    |              ^^ help: if this is intentional, prefix it with an underscore: `_si`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: value assigned to `consumed` is never read
+   --> mqtt-core\src\common.rs:281:24
+    |
+281 |     let mut consumed = 0;
+    |                        ^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `fixed_header`
+  --> mqtt-core\src\v3\codec.rs:82:32
+   |
+82 | fn decode_connect(data: &[u8], fixed_header: u8) -> MqttResult<ConnectPacket> {
+   |                                ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_fixed_header`
+
+warning: unused variable: `protocol_name`
+  --> mqtt-core\src\v3\codec.rs:86:10
+   |
+86 |     let (protocol_name, consumed) = decode_string(data)?;
+   |          ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_protocol_name`
+
+warning: unused variable: `consumed`
+   --> mqtt-core\src\v3\codec.rs:130:23
+    |
+130 |         let (message, consumed) = {
+    |                       ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_consumed`
+
+warning: value assigned to `pos` is never read
+   --> mqtt-core\src\v3\codec.rs:165:9
+    |
+165 |         pos += consumed;
+    |         ^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: unused variable: `dup`
+   --> mqtt-core\src\v3\codec.rs:256:9
+    |
+256 |     let dup = (fixed_header & 0x08) != 0;
+    |         ^^^ help: if this is intentional, prefix it with an underscore: `_dup`
+
+warning: unused variable: `protocol_name`
+  --> mqtt-core\src\v5\codec.rs:85:10
+   |
+85 |     let (protocol_name, consumed) = decode_string(data)?;
+   |          ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_protocol_name`
+
+warning: unused variable: `consumed`
+   --> mqtt-core\src\v5\codec.rs:135:23
+    |
+135 |         let (payload, consumed) = {
+    |                       ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_consumed`
+
+warning: value assigned to `pos` is never read
+   --> mqtt-core\src\v5\codec.rs:172:9
+    |
+172 |         pos += consumed;
+    |         ^^^^^^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: unused variable: `dup`
+   --> mqtt-core\src\v5\codec.rs:270:9
+    |
+270 |     let dup = (fixed_header & 0x08) != 0;
+    |         ^^^ help: if this is intentional, prefix it with an underscore: `_dup`
+
+warning: missing documentation for an associated function
+  --> mqtt-core\src\common.rs:44:5
+   |
+44 |     pub fn from_u8(value: u8) -> Option<Self> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> mqtt-core\src\lib.rs:6:9
+   |
+ 6 | #![warn(missing_docs)]
+   |         ^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> mqtt-core\src\common.rs:53:5
+   |
+53 |     pub fn to_u8(self) -> u8 {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:71:5
+   |
+71 |     Connect = 1,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:72:5
+   |
+72 |     ConnAck = 2,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:73:5
+   |
+73 |     Publish = 3,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:74:5
+   |
+74 |     PubAck = 4,
+   |     ^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:75:5
+   |
+75 |     PubRec = 5,
+   |     ^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:76:5
+   |
+76 |     PubRel = 6,
+   |     ^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:77:5
+   |
+77 |     PubComp = 7,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:78:5
+   |
+78 |     Subscribe = 8,
+   |     ^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:79:5
+   |
+79 |     SubAck = 9,
+   |     ^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:80:5
+   |
+80 |     Unsubscribe = 10,
+   |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:81:5
+   |
+81 |     UnsubAck = 11,
+   |     ^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:82:5
+   |
+82 |     PingReq = 12,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:83:5
+   |
+83 |     PingResp = 13,
+   |     ^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:84:5
+   |
+84 |     Disconnect = 14,
+   |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\common.rs:85:5
+   |
+85 |     Auth = 15,
+   |     ^^^^
+
+warning: missing documentation for an associated function
+  --> mqtt-core\src\common.rs:89:5
+   |
+89 |     pub fn from_u8(value: u8) -> Option<Self> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\common.rs:110:5
+    |
+110 |     pub fn to_u8(self) -> u8 {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+   --> mqtt-core\src\common.rs:147:5
+    |
+147 |     pub fn new(filter: &str) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\common.rs:185:5
+    |
+185 |     pub fn as_str(&self) -> &str {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\common.rs:193:5
+    |
+193 |     pub name: String,
+    |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+   --> mqtt-core\src\common.rs:197:5
+    |
+197 |     pub fn new(name: &str) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\common.rs:201:5
+    |
+201 |     pub fn as_str(&self) -> &str {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:222:5
+    |
+222 |     InvalidPacket(String),
+    |     ^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:225:5
+    |
+225 |     ProtocolViolation(String),
+    |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:228:5
+    |
+228 |     Io(#[from] std::io::Error),
+    |     ^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:231:5
+    |
+231 |     UnsupportedVersion(u8),
+    |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:234:5
+    |
+234 |     MalformedRemainingLength,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:237:5
+    |
+237 |     PacketTooLarge(usize),
+    |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:240:5
+    |
+240 |     InvalidUtf8,
+    |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:243:5
+    |
+243 |     Codec(String),
+    |     ^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\common.rs:246:5
+    |
+246 |     AuthFailed(String),
+    |     ^^^^^^^^^^
+
+warning: missing documentation for a struct
+  --> mqtt-core\src\v3\types.rs:27:1
+   |
+27 | pub struct Will {
+   | ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v3\types.rs:42:5
+   |
+42 |     Accepted = 0,
+   |     ^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v3\types.rs:43:5
+   |
+43 |     UnacceptableProtocolVersion = 1,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v3\types.rs:44:5
+   |
+44 |     IdentifierRejected = 2,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v3\types.rs:45:5
+   |
+45 |     ServerUnavailable = 3,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v3\types.rs:46:5
+   |
+46 |     BadUsernameOrPassword = 4,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v3\types.rs:47:5
+   |
+47 |     NotAuthorized = 5,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> mqtt-core\src\v3\types.rs:51:5
+   |
+51 |     pub fn from_u8(v: u8) -> Option<Self> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> mqtt-core\src\v3\types.rs:63:5
+   |
+63 |     pub fn to_u8(self) -> u8 {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+  --> mqtt-core\src\v3\types.rs:69:1
+   |
+69 | pub struct ConnAckPacket {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> mqtt-core\src\v3\types.rs:96:5
+   |
+96 |     pub packet_id: PacketId,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v3\types.rs:100:1
+    |
+100 | pub struct PubRecPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:101:5
+    |
+101 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v3\types.rs:105:1
+    |
+105 | pub struct PubRelPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:106:5
+    |
+106 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v3\types.rs:110:1
+    |
+110 | pub struct PubCompPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:111:5
+    |
+111 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:118:5
+    |
+118 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:119:5
+    |
+119 |     pub filters: Vec<SubscribeFilter>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v3\types.rs:123:1
+    |
+123 | pub struct SubscribeFilter {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:124:5
+    |
+124 |     pub path: String,
+    |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:125:5
+    |
+125 |     pub qos: QoS,
+    |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:132:5
+    |
+132 |     SuccessQoS0 = 0,
+    |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:133:5
+    |
+133 |     SuccessQoS1 = 1,
+    |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:134:5
+    |
+134 |     SuccessQoS2 = 2,
+    |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:135:5
+    |
+135 |     Failure = 0x80,
+    |     ^^^^^^^
+
+warning: missing documentation for an associated function
+   --> mqtt-core\src\v3\types.rs:139:5
+    |
+139 |     pub fn from_u8(v: u8) -> Option<Self> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v3\types.rs:151:1
+    |
+151 | pub struct SubAckPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:152:5
+    |
+152 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:153:5
+    |
+153 |     pub return_codes: Vec<SubAckReturnCode>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:160:5
+    |
+160 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:161:5
+    |
+161 |     pub filters: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v3\types.rs:168:5
+    |
+168 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v3\types.rs:177:1
+    |
+177 | pub struct PingRespPacket;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v3\types.rs:180:1
+    |
+180 | pub struct DisconnectPacket;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:186:5
+    |
+186 |     Connect(ConnectPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:187:5
+    |
+187 |     ConnAck(ConnAckPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:188:5
+    |
+188 |     Publish(PublishPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:189:5
+    |
+189 |     PubAck(PubAckPacket),
+    |     ^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:190:5
+    |
+190 |     PubRec(PubRecPacket),
+    |     ^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:191:5
+    |
+191 |     PubRel(PubRelPacket),
+    |     ^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:192:5
+    |
+192 |     PubComp(PubCompPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:193:5
+    |
+193 |     Subscribe(SubscribePacket),
+    |     ^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:194:5
+    |
+194 |     SubAck(SubAckPacket),
+    |     ^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:195:5
+    |
+195 |     Unsubscribe(UnsubscribePacket),
+    |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:196:5
+    |
+196 |     UnsubAck(UnsubAckPacket),
+    |     ^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:197:5
+    |
+197 |     PingReq(PingReqPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:198:5
+    |
+198 |     PingResp(PingRespPacket),
+    |     ^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v3\types.rs:199:5
+    |
+199 |     Disconnect(DisconnectPacket),
+    |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:16:5
+   |
+16 |     Success = 0,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:17:5
+   |
+17 |     GrantedQoS1 = 1,
+   |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:18:5
+   |
+18 |     GrantedQoS2 = 2,
+   |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:19:5
+   |
+19 |     DisconnectWithWillMessage = 4,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:20:5
+   |
+20 |     NoMatchingSubscribers = 16,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:21:5
+   |
+21 |     NoSubscriptionExisted = 17,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:22:5
+   |
+22 |     ContinueAuthentication = 24,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:23:5
+   |
+23 |     ReAuthenticate = 25,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:24:5
+   |
+24 |     UnspecifiedError = 128,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:25:5
+   |
+25 |     MalformedPacket = 129,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:26:5
+   |
+26 |     ProtocolError = 130,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:27:5
+   |
+27 |     ImplementationSpecificError = 131,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:28:5
+   |
+28 |     UnsupportedProtocolVersion = 132,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:29:5
+   |
+29 |     ClientIdentifierNotValid = 133,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:30:5
+   |
+30 |     BadUserNameOrPassword = 134,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:31:5
+   |
+31 |     NotAuthorized = 135,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:32:5
+   |
+32 |     ServerUnavailable = 136,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:33:5
+   |
+33 |     ServerBusy = 137,
+   |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:34:5
+   |
+34 |     Banned = 138,
+   |     ^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:35:5
+   |
+35 |     ServerShuttingDown = 139,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:36:5
+   |
+36 |     BadAuthenticationMethod = 140,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:37:5
+   |
+37 |     KeepAliveTimeout = 141,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:38:5
+   |
+38 |     SessionTakenOver = 142,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:39:5
+   |
+39 |     TopicFilterInvalid = 143,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:40:5
+   |
+40 |     TopicNameInvalid = 144,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:41:5
+   |
+41 |     PacketIdentifierInUse = 145,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:42:5
+   |
+42 |     PacketIdentifierNotFound = 146,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:43:5
+   |
+43 |     ReceiveMaximumExceeded = 147,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:44:5
+   |
+44 |     TopicAliasInvalid = 148,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:45:5
+   |
+45 |     PacketTooLarge = 149,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:46:5
+   |
+46 |     MessageRateTooHigh = 150,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:47:5
+   |
+47 |     QuotaExceeded = 151,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:48:5
+   |
+48 |     AdministrativeAction = 152,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:49:5
+   |
+49 |     PayloadFormatInvalid = 153,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:50:5
+   |
+50 |     RetainNotSupported = 154,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:51:5
+   |
+51 |     QoSNotSupported = 155,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:52:5
+   |
+52 |     UseAnotherServer = 156,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:53:5
+   |
+53 |     ServerMoved = 157,
+   |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:54:5
+   |
+54 |     SharedSubscriptionsNotSupported = 158,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:55:5
+   |
+55 |     ConnectionRateExceeded = 159,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:56:5
+   |
+56 |     MaximumConnectTime = 160,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:57:5
+   |
+57 |     SubscriptionIdentifiersNotSupported = 161,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\types.rs:58:5
+   |
+58 |     WildcardSubscriptionsNotSupported = 162,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> mqtt-core\src\v5\types.rs:70:5
+   |
+70 |     pub fn from_u8(v: u8) -> Option<Self> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\types.rs:119:5
+    |
+119 |     pub fn is_success(&self) -> bool {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:127:1
+    |
+127 | pub struct ConnectPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:128:5
+    |
+128 |     pub client_id: String,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:129:5
+    |
+129 |     pub clean_start: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:130:5
+    |
+130 |     pub keep_alive: u16,
+    |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:131:5
+    |
+131 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:132:5
+    |
+132 |     pub will: Option<Will>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:133:5
+    |
+133 |     pub username: Option<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:134:5
+    |
+134 |     pub password: Option<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:138:1
+    |
+138 | pub struct Will {
+    | ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:139:5
+    |
+139 |     pub topic: String,
+    |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:140:5
+    |
+140 |     pub payload: Vec<u8>,
+    |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:141:5
+    |
+141 |     pub qos: QoS,
+    |     ^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:142:5
+    |
+142 |     pub retain: bool,
+    |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:143:5
+    |
+143 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:144:5
+    |
+144 |     pub delay_interval: u32,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:150:1
+    |
+150 | pub struct ConnAckPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:151:5
+    |
+151 |     pub session_present: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:152:5
+    |
+152 |     pub reason_code: ReasonCode,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:153:5
+    |
+153 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:159:1
+    |
+159 | pub struct PublishPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:160:5
+    |
+160 |     pub topic: String,
+    |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:161:5
+    |
+161 |     pub payload: Vec<u8>,
+    |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:162:5
+    |
+162 |     pub qos: QoS,
+    |     ^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:163:5
+    |
+163 |     pub retain: bool,
+    |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:164:5
+    |
+164 |     pub packet_id: Option<PacketId>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:165:5
+    |
+165 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:171:1
+    |
+171 | pub struct PubAckPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:172:5
+    |
+172 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:173:5
+    |
+173 |     pub reason_code: ReasonCode,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:174:5
+    |
+174 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:178:1
+    |
+178 | pub struct PubRecPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:179:5
+    |
+179 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:180:5
+    |
+180 |     pub reason_code: ReasonCode,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:181:5
+    |
+181 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:185:1
+    |
+185 | pub struct PubRelPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:186:5
+    |
+186 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:187:5
+    |
+187 |     pub reason_code: ReasonCode,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:188:5
+    |
+188 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:192:1
+    |
+192 | pub struct PubCompPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:193:5
+    |
+193 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:194:5
+    |
+194 |     pub reason_code: ReasonCode,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:195:5
+    |
+195 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:201:1
+    |
+201 | pub struct SubscribePacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:202:5
+    |
+202 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:203:5
+    |
+203 |     pub filters: Vec<SubscribeFilter>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:204:5
+    |
+204 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:208:1
+    |
+208 | pub struct SubscribeFilter {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:209:5
+    |
+209 |     pub path: String,
+    |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:210:5
+    |
+210 |     pub qos: QoS,
+    |     ^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:211:5
+    |
+211 |     pub no_local: bool,
+    |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:212:5
+    |
+212 |     pub retain_as_published: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:213:5
+    |
+213 |     pub retain_handling: RetainHandling,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an enum
+   --> mqtt-core\src\v5\types.rs:217:1
+    |
+217 | pub enum RetainHandling {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+   --> mqtt-core\src\v5\types.rs:227:5
+    |
+227 |     pub fn from_u8(v: u8) -> Option<Self> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:240:1
+    |
+240 | pub struct SubAckPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:241:5
+    |
+241 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:242:5
+    |
+242 |     pub reason_codes: Vec<ReasonCode>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:243:5
+    |
+243 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:249:1
+    |
+249 | pub struct UnsubscribePacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:250:5
+    |
+250 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:251:5
+    |
+251 |     pub filters: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:252:5
+    |
+252 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:258:1
+    |
+258 | pub struct UnsubAckPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:259:5
+    |
+259 |     pub packet_id: PacketId,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:260:5
+    |
+260 |     pub reason_codes: Vec<ReasonCode>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:261:5
+    |
+261 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:267:1
+    |
+267 | pub struct PingReqPacket;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:270:1
+    |
+270 | pub struct PingRespPacket;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:275:1
+    |
+275 | pub struct DisconnectPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:276:5
+    |
+276 |     pub reason_code: ReasonCode,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:277:5
+    |
+277 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+   --> mqtt-core\src\v5\types.rs:283:1
+    |
+283 | pub struct AuthPacket {
+    | ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:284:5
+    |
+284 |     pub reason_code: ReasonCode,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> mqtt-core\src\v5\types.rs:285:5
+    |
+285 |     pub properties: Properties,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an enum
+   --> mqtt-core\src\v5\types.rs:291:1
+    |
+291 | pub enum MqttPacketV5 {
+    | ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:292:5
+    |
+292 |     Connect(ConnectPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:293:5
+    |
+293 |     ConnAck(ConnAckPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:294:5
+    |
+294 |     Publish(PublishPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:295:5
+    |
+295 |     PubAck(PubAckPacket),
+    |     ^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:296:5
+    |
+296 |     PubRec(PubRecPacket),
+    |     ^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:297:5
+    |
+297 |     PubRel(PubRelPacket),
+    |     ^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:298:5
+    |
+298 |     PubComp(PubCompPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:299:5
+    |
+299 |     Subscribe(SubscribePacket),
+    |     ^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:300:5
+    |
+300 |     SubAck(SubAckPacket),
+    |     ^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:301:5
+    |
+301 |     Unsubscribe(UnsubscribePacket),
+    |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:302:5
+    |
+302 |     UnsubAck(UnsubAckPacket),
+    |     ^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:303:5
+    |
+303 |     PingReq(PingReqPacket),
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:304:5
+    |
+304 |     PingResp(PingRespPacket),
+    |     ^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:305:5
+    |
+305 |     Disconnect(DisconnectPacket),
+    |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> mqtt-core\src\v5\types.rs:306:5
+    |
+306 |     Auth(AuthPacket),
+    |     ^^^^
+
+warning: missing documentation for a variant
+ --> mqtt-core\src\v5\properties.rs:9:5
+  |
+9 |     PayloadFormatIndicator = 1,
+  |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:10:5
+   |
+10 |     MessageExpiryInterval = 2,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:11:5
+   |
+11 |     ContentType = 3,
+   |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:12:5
+   |
+12 |     ResponseTopic = 8,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:13:5
+   |
+13 |     CorrelationData = 9,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:14:5
+   |
+14 |     SubscriptionIdentifier = 11,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:15:5
+   |
+15 |     SessionExpiryInterval = 17,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:16:5
+   |
+16 |     AssignedClientIdentifier = 18,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:17:5
+   |
+17 |     ServerKeepAlive = 19,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:18:5
+   |
+18 |     AuthenticationMethod = 21,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:19:5
+   |
+19 |     AuthenticationData = 22,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:20:5
+   |
+20 |     RequestProblemInformation = 23,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:21:5
+   |
+21 |     WillDelayInterval = 24,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:22:5
+   |
+22 |     RequestResponseInformation = 25,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:23:5
+   |
+23 |     ResponseInformation = 26,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:24:5
+   |
+24 |     ServerReference = 28,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:25:5
+   |
+25 |     ReasonString = 31,
+   |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:26:5
+   |
+26 |     ReceiveMaximum = 33,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:27:5
+   |
+27 |     TopicAliasMaximum = 34,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:28:5
+   |
+28 |     TopicAlias = 35,
+   |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:29:5
+   |
+29 |     MaximumQoS = 36,
+   |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:30:5
+   |
+30 |     RetainAvailable = 37,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:31:5
+   |
+31 |     UserProperty = 38,
+   |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:32:5
+   |
+32 |     MaximumPacketSize = 39,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:33:5
+   |
+33 |     WildcardSubscriptionAvailable = 40,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:34:5
+   |
+34 |     SubscriptionIdentifierAvailable = 41,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:35:5
+   |
+35 |     SharedSubscriptionAvailable = 42,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> mqtt-core\src\v5\properties.rs:39:5
+   |
+39 |     pub fn from_u8(v: u8) -> Option<Self> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:76:5
+   |
+76 |     Byte(u8),
+   |     ^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:77:5
+   |
+77 |     TwoByteInteger(u16),
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:78:5
+   |
+78 |     FourByteInteger(u32),
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:79:5
+   |
+79 |     VariableByteInteger(u32),
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:80:5
+   |
+80 |     BinaryData(Vec<u8>),
+   |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:81:5
+   |
+81 |     UTF8String(String),
+   |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> mqtt-core\src\v5\properties.rs:82:5
+   |
+82 |     Pair(String, String), // User property
+   |     ^^^^
+
+warning: missing documentation for a struct field
+  --> mqtt-core\src\v5\properties.rs:88:5
+   |
+88 |     pub inner: Vec<(PropertyId, PropertyValue)>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> mqtt-core\src\v5\properties.rs:92:5
+   |
+92 |     pub fn new() -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> mqtt-core\src\v5\properties.rs:96:5
+   |
+96 |     pub fn with_capacity(cap: usize) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:100:5
+    |
+100 |     pub fn is_empty(&self) -> bool {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:104:5
+    |
+104 |     pub fn add(&mut self, id: PropertyId, value: PropertyValue) {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:108:5
+    |
+108 |     pub fn get(&self, id: PropertyId) -> Vec<&PropertyValue> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:115:5
+    |
+115 |     pub fn get_first(&self, id: PropertyId) -> Option<&PropertyValue> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:260:5
+    |
+260 |     pub fn session_expiry_interval(&self) -> Option<u32> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:268:5
+    |
+268 |     pub fn receive_maximum(&self) -> Option<u16> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:276:5
+    |
+276 |     pub fn maximum_packet_size(&self) -> Option<u32> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:284:5
+    |
+284 |     pub fn topic_alias_maximum(&self) -> Option<u16> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:292:5
+    |
+292 |     pub fn reason_string(&self) -> Option<&str> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> mqtt-core\src\v5\properties.rs:300:5
+    |
+300 |     pub fn will_delay_interval(&self) -> Option<u32> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> mqtt-core\src\codec.rs:82:5
+   |
+82 |     pub fn new(max_packet_size: usize) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+   --> mqtt-core\src\codec.rs:193:5
+    |
+193 |     pub fn new(max_packet_size: usize) -> Self {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `mqtt-core` (lib) generated 278 warnings (run `cargo fix --lib -p mqtt-core` to apply 8 suggestions)
+warning: unused import: `TopicFilter`
+ --> mqtt-broker\src\subscription.rs:4:30
+  |
+4 | use mqtt_core::common::{QoS, TopicFilter};
+  |                              ^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::time::Duration`
+ --> mqtt-broker\src\server.rs:4:5
+  |
+4 | use std::time::Duration;
+  |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `tokio::time`
+ --> mqtt-broker\src\server.rs:9:5
+  |
+9 | use tokio::time;
+  |     ^^^^^^^^^^^
+
+warning: unused import: `tokio_util::codec::Decoder`
+  --> mqtt-broker\src\server.rs:10:5
+   |
+10 | use tokio_util::codec::Decoder;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AuthResult` and `Authenticator`
+  --> mqtt-broker\src\server.rs:18:19
+   |
+18 | use crate::auth::{AuthResult, Authenticator};
+   |                   ^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: unused import: `crate::metrics::MetricsSnapshot`
+  --> mqtt-broker\src\server.rs:20:5
+   |
+20 | use crate::metrics::MetricsSnapshot;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::will::WillMessage`
+  --> mqtt-broker\src\server.rs:23:5
+   |
+23 | use crate::will::WillMessage;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AtomicU64` and `Ordering`
+ --> mqtt-broker\src\metrics.rs:3:25
+  |
+3 | use std::sync::atomic::{AtomicU64, Ordering};
+  |                         ^^^^^^^^^  ^^^^^^^^
+
+warning: unused import: `std::sync::Arc`
+  --> mqtt-broker\src\lib.rs:17:5
+   |
+17 | use std::sync::Arc;
+   |     ^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+   --> mqtt-broker\src\server.rs:102:9
+    |
+102 |     let mut codec = MqttFramedCodec::new(state.config.max_packet_size);
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> mqtt-broker\src\server.rs:106:9
+    |
+106 |     let mut write_buf = BytesMut::with_capacity(4096);
+    |         ----^^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: unused variable: `source_client`
+  --> mqtt-broker\src\server.rs:37:78
+   |
+37 |                 crate::BrokerMessage::Publish { topic, payload, qos, retain, source_client } => {
+   |                                                                              ^^^^^^^^^^^^^ help: try ignoring the field: `source_client: _`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `will`
+  --> mqtt-broker\src\server.rs:55:37
+   |
+55 |                     if let Some((_, will)) = bg_state.wills.remove(&client_id) {
+   |                                     ^^^^ help: if this is intentional, prefix it with an underscore: `_will`
+
+warning: unused variable: `codec`
+   --> mqtt-broker\src\server.rs:102:9
+    |
+102 |     let mut codec = MqttFramedCodec::new(state.config.max_packet_size);
+    |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_codec`
+
+warning: unused variable: `write_buf`
+   --> mqtt-broker\src\server.rs:106:9
+    |
+106 |     let mut write_buf = BytesMut::with_capacity(4096);
+    |         ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_write_buf`
+
+warning: unused variable: `codec`
+   --> mqtt-broker\src\server.rs:267:9
+    |
+267 |     let codec = MqttFramedCodec::new(config.max_packet_size);
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_codec`
+
+warning: `mqtt-broker` (lib) generated 16 warnings (run `cargo fix --lib -p mqtt-broker` to apply 16 suggestions)
+warning: unused variable: `broker_handle`
+  --> mqtt-web\src\main.rs:41:9
+   |
+41 |     let broker_handle = mqtt_broker::server::start_broker(state.clone()).await?;
+   |         ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_broker_handle`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `mqtt-web` (bin "mqtt-web") generated 1 warning (run `cargo fix --bin "mqtt-web" -p mqtt-web` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.34s
+     Running `target\debug\mqtt-web.exe`
+[2m2026-05-26T05:06:32.085976Z[0m [32m INFO[0m [2mmqtt_web[0m[2m:[0m AtomMQTT Broker starting...
+[2m2026-05-26T05:06:32.088095Z[0m [32m INFO[0m [2mmqtt_broker::server[0m[2m:[0m MQTT Broker listening on tcp://0.0.0.0:1883
+[2m2026-05-26T05:06:32.088193Z[0m [32m INFO[0m [2mmqtt_web[0m[2m:[0m Web management interface starting on http://0.0.0.0:8080
+[2m2026-05-26T05:06:32.088211Z[0m [32m INFO[0m [2mmqtt_web[0m[2m:[0m Static files serving from: "C:\\Users\\dicing\\Desktop\\test\\rust_mqtt_broker\\mqtt-web\\static"
+[2m2026-05-26T05:06:32.088449Z[0m [32m INFO[0m [2mactix_server::builder[0m[2m:[0m starting 12 workers
+[2m2026-05-26T05:06:32.088500Z[0m [32m INFO[0m [2mactix_server::server[0m[2m:[0m Tokio runtime found; starting in existing Tokio runtime
+[2m2026-05-26T05:06:32.088525Z[0m [32m INFO[0m [2mactix_server::server[0m[2m:[0m starting service: "actix-web-service-0.0.0.0:8080", workers: 12, listening on: 0.0.0.0:8080
+[2m2026-05-26T05:06:44.511313Z[0m [32m INFO[0m [2mactix_web::middleware::logger[0m[2m:[0m 192.168.125.199 "GET /api/subscriptions HTTP/1.1" 200 2 "http://192.168.125.199:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" 0.000655
+[2m2026-05-26T05:06:44.816646Z[0m [32m INFO[0m [2mactix_web::middleware::logger[0m[2m:[0m 127.0.0.1 "GET /api/metrics HTTP/1.1" 200 228 "http://localhost:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" 0.000293
+[2m2026-05-26T05:06:53.411238Z[0m [32m INFO[0m [2mmqtt_broker::server[0m[2m:[0m New connection from: 127.0.0.1:55370
+[DIAG] Initial read: 21 bytes, buf_len=21
+[2m2026-05-26T05:06:53.411556Z[0m [32m INFO[0m [2mmqtt_broker::server[0m[2m:[0m Client connected: fix-sub, version=V311
+[DIAG] framed_buf after CONNECT: 0 bytes
+[DIAG] decoded packet type=Discriminant(0) size=15
+[DIAG] SUBSCRIBE from fix-sub: 1 filters
+[DIAG]   filter='fix/test' qos=AtMostOnce
+[DIAG] decoded packet type=Discriminant(0) size=2
+[2m2026-05-26T05:07:12.871030Z[0m [32m INFO[0m [2mmqtt_broker::server[0m[2m:[0m New connection from: 127.0.0.1:55373
+[DIAG] Initial read: 22 bytes, buf_len=22
+[2m2026-05-26T05:07:12.871232Z[0m [32m INFO[0m [2mmqtt_broker::server[0m[2m:[0m Client connected: fix-sub2, version=V311
+[DIAG] framed_buf after CONNECT: 0 bytes
+[DIAG] decoded packet type=Discriminant(0) size=15
+[DIAG] SUBSCRIBE from fix-sub2: 1 filters
+[DIAG]   filter='fix/test' qos=AtMostOnce
+[DIAG] decoded packet type=Discriminant(0) size=2
+[2m2026-05-26T05:07:22.982586Z[0m [32m INFO[0m [2mactix_web::middleware::logger[0m[2m:[0m 127.0.0.1 "GET /api/subscriptions HTTP/1.1" 200 116 "-" "curl/8.0.1" 0.000416
+[2m2026-05-26T05:07:22.997858Z[0m [32m INFO[0m [2mactix_web::middleware::logger[0m[2m:[0m 127.0.0.1 "GET /api/metrics HTTP/1.1" 200 229 "-" "curl/8.0.1" 0.000245
+[DIAG] decoded packet type=Discriminant(0) size=2
+[DIAG] decoded packet type=Discriminant(0) size=2
+[2m2026-05-26T05:07:44.509448Z[0m [32m INFO[0m [2mactix_web::middleware::logger[0m[2m:[0m 192.168.125.199 "GET /api/subscriptions HTTP/1.1" 200 116 "http://192.168.125.199:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" 0.000396
+[2m2026-05-26T05:07:44.816517Z[0m [32m INFO[0m [2mactix_web::middleware::logger[0m[2m:[0m 127.0.0.1 "GET /api/metrics HTTP/1.1" 200 229 "http://localhost:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" 0.000241
+error: process didn't exit successfully: `target\debug\mqtt-web.exe` (exit code: 1)

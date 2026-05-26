@@ -1,0 +1,34 @@
+[2m2026-05-26T05:40:23.601513Z[0m [32m INFO[0m [2mmqtt_client[0m[2m:[0m 连接成功: Accepted
+[2m2026-05-26T05:40:23.602644Z[0m [32m INFO[0m [2mmqtt_client[0m[2m:[0m 订阅成功: packet_id=1, codes=[SuccessQoS1]
+📡 等待消息 (topic=test/#)，按 Ctrl+C 退出...
+
+📩 [test/ws-test] QoS=AtMostOnce (32字节)
+  载荷: 从MQTT客户端发布的消息!
+
+📩 [test/ws-test2] QoS=AtMostOnce (19字节)
+  载荷: 来自Web的消息!
+
+📩 [test/topic] QoS=AtMostOnce (11字节)
+  载荷: Hello MQTT!
+
+📩 [test/topic] QoS=AtMostOnce (11字节)
+  载荷: Hello MQTT!
+
+📩 [test/topic] QoS=AtMostOnce (11字节)
+  载荷: Hello MQTT!
+
+📩 [test/topic] QoS=AtMostOnce (11字节)
+  载荷: Hello MQTT!
+
+📩 [test/topic] QoS=AtMostOnce (11字节)
+  载荷: Hello MQTT!
+
+📩 [test/topic] QoS=AtMostOnce (11字节)
+  载荷: Hello MQTT!
+
+📩 [test/topic] QoS=AtMostOnce (21字节)
+  载荷: Hello MQTT!aaaaaaaaaa
+
+📩 [test/topic] QoS=AtMostOnce (21字节)
+  载荷: Hello MQTT!aaaaaaaaaa
+^C

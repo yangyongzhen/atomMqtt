@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AtomMQTT Broker 管理平台</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>AtomMQTT</h1>
+                <span class="version">v0.1.0</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="icon">📊</span> 仪表盘
+                </a>
+                <a href="#" class="nav-item" data-page="clients">
+                    <span class="icon">👥</span> 客户端
+                </a>
+                <a href="#" class="nav-item" data-page="subscriptions">
+                    <span class="icon">📋</span> 订阅
+                </a>
+                <a href="#" class="nav-item" data-page="retained">
+                    <span class="icon">💾</span> 保留消息
+                </a>
+                <a href="#" class="nav-item" data-page="publish">
+                    <span class="icon">📤</span> 发布消息
+                </a>
+                <a href="#" class="nav-item" data-page="subscribe">
+                    <span class="icon">📡</span> 订阅消息
+                </a>
+                <a href="#" class="nav-item" data-page="info">
+                    <span class="icon">ℹ️</span> 服务器信息
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-indicator" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span>已连接</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <section id="page-dashboard" class="page active">
+                <div class="page-header">
+                    <h2>仪表盘</h2>
+                    <div class="last-update">最后更新: <span id="lastUpdate">-</span></div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card" id="card-clients">
+                        <div class="metric-icon">👥</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="clientsConnected">0</div>
+                            <div class="metric-label">在线客户端</div>
+                        </div>
+                    </div>
+                    <div class="metric-card" id="card-subscriptions">
+                        <div class="metric-icon">📋</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="subscriptionsActive">0</div>
+                            <div class="metric-label">活跃订阅</div>
+                        </div>
+                    </div>
+                    <div class="metric-card" id="card-published">
+                        <div class="metric-icon">📤</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="messagesPublished">0</div>
+                            <div class="metric-label">已发布消息</div>
+                        </div>
+                    </div>
+                    <div class="metric-card" id="card-received">
+                        <div class="metric-icon">📥</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="messagesReceived">0</div>
+                            <div class="metric-label">已接收消息</div>
+                        </div>
+                    </div>
+                    <div class="metric-card" id="card-packets-sent">
+                        <div class="metric-icon">⬆️</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="packetsSent">0</div>
+                            <div class="metric-label">已发送包</div>
+                        </div>
+                    </div>
+                    <div class="metric-card" id="card-packets-recv">
+                        <div class="metric-icon">⬇️</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="packetsReceived">0</div>
+                            <div class="metric-label">已接收包</div>
+                        </div>
+                    </div>
+                    <div class="metric-card" id="card-bytes-sent">
+                        <div class="metric-icon">💾</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="bytesSent">0</div>
+                            <div class="metric-label">发送字节</div>
+                        </div>
+                    </div>
+                    <div class="metric-card" id="card-bytes-recv">
+                        <div class="metric-icon">💽</div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="bytesReceived">0</div>
+                            <div class="metric-label">接收字节</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Clients Page -->
+            <section id="page-clients" class="page">
+                <div class="page-header">
+                    <h2>客户端列表</h2>
+                    <button class="btn btn-sm" onclick="refreshClients()">🔄 刷新</button>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client ID</th>
+                                <th>协议版本</th>
+                                <th>状态</th>
+                                <th>Keep Alive</th>
+                                <th>用户名</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsTableBody">
+                            <tr><td colspan="6" class="empty-state">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Subscriptions Page -->
+            <section id="page-subscriptions" class="page">
+                <div class="page-header">
+                    <h2>订阅列表</h2>
+                    <span class="badge" id="subCount">0</span>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client ID</th>
+                                <th>主题过滤器</th>
+                                <th>QoS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscriptionsTableBody">
+                            <tr><td colspan="3" class="empty-state">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Retained Messages Page -->
+            <section id="page-retained" class="page">
+                <div class="page-header">
+                    <h2>保留消息</h2>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>主题</th>
+                                <th>QoS</th>
+                                <th>大小</th>
+                                <th>预览</th>
+                            </tr>
+                        </thead>
+                        <tbody id="retainedTableBody">
+                            <tr><td colspan="4" class="empty-state">暂无保留消息</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Publish Page -->
+            <section id="page-publish" class="page">
+                <div class="page-header">
+                    <h2>发布消息</h2>
+                </div>
+                <div class="form-card">
+                    <form id="publishForm">
+                        <div class="form-group">
+                            <label for="pubTopic">主题</label>
+                            <input type="text" id="pubTopic" placeholder="如: test/topic" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pubPayload">消息内容</label>
+                            <textarea id="pubPayload" rows="4" placeholder="消息内容" required>Hello MQTT!</textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pubQos">QoS</label>
+                                <select id="pubQos">
+                                    <option value="0">QoS 0</option>
+                                    <option value="1">QoS 1</option>
+                                    <option value="2">QoS 2</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="pubRetain"> 保留消息
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">发布</button>
+                    </form>
+                    <div id="publishResult" class="result-box hidden"></div>
+                </div>
+            </section>
+
+            <!-- Subscribe Page -->
+            <section id="page-subscribe" class="page">
+                <div class="page-header">
+                    <h2>订阅消息</h2>
+                    <span class="badge" id="wsStatus" style="background:var(--warning)">未连接</span>
+                </div>
+                <div class="form-card">
+                    <form id="subscribeForm">
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2">
+                                <label for="subTopicFilter">主题过滤器</label>
+                                <input type="text" id="subTopicFilter" placeholder="如: test/#" value="test/#">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label for="subQos">QoS</label>
+                                <select id="subQos">
+                                    <option value="0">QoS 0</option>
+                                    <option value="1" selected>QoS 1</option>
+                                    <option value="2">QoS 2</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:0;align-self:flex-end">
+                                <button type="submit" class="btn btn-primary" id="subBtn">📡 订阅</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="form-row" style="margin-top:8px">
+                        <button class="btn btn-sm btn-danger" id="unsubAllBtn" disabled>取消所有订阅</button>
+                        <button class="btn btn-sm" id="clearMsgsBtn">清空消息</button>
+                    </div>
+                </div>
+                <div class="page-header" style="margin-top:16px">
+                    <h3>接收消息 <span class="badge" id="msgCount">0</span></h3>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width:120px">时间</th>
+                                <th style="width:200px">主题</th>
+                                <th>载荷</th>
+                                <th style="width:60px">QoS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subMessagesBody">
+                            <tr><td colspan="4" class="empty-state">订阅主题后，消息将实时显示在此处</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Server Info Page -->
+            <section id="page-info" class="page">
+                <div class="page-header">
+                    <h2>服务器信息</h2>
+                </div>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <h3>Broker</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">名称</span>
+                                <span class="info-value" id="infoName">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">版本</span>
+                                <span class="info-value" id="infoVersion">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">运行时间</span>
+                                <span class="info-value" id="infoUptime">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3>网络配置</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">TCP 监听</span>
+                                <span class="info-value" id="infoTcpAddr">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Web 监听</span>
+                                <span class="info-value" id="infoWebAddr">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">协议</span>
+                                <span class="info-value" id="infoProtocols">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">匿名访问</span>
+                                <span class="info-value" id="infoAnonymous">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">最大包大小</span>
+                                <span class="info-value" id="infoMaxPkt">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

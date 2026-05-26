@@ -1,0 +1,16 @@
+[package]
+name = "mqtt-core"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bytes = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio-util = { workspace = true }
+tracing = { workspace = true }
+
+[lib]
+name = "mqtt_core"
+path = "src/lib.rs"
