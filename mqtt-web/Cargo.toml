@@ -7,8 +7,9 @@ edition.workspace = true
 mqtt-core = { path = "../mqtt-core" }
 mqtt-broker = { path = "../mqtt-broker" }
 actix-web = "4"
-actix-files = "0.6"
 actix-ws = "0.3"
+include_dir = "0.7"
+mime_guess = "2.0"
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }

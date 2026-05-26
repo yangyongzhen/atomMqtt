@@ -13,6 +13,30 @@ use mqtt_broker::persistence::Persistence;
 mod api;
 mod models;
 
+use actix_web::HttpResponse;
+use include_dir::{include_dir, Dir};
+
+/// Embedded static files directory (compiled into binary).
+static STATIC_DIR: Dir<'_> = include_dir!("mqtt-web/static");
+
+/// Serve a file from the embedded static directory.
+/// All paths under `/` are resolved against the `static/` directory.
+async fn serve_embedded_file(req: actix_web::HttpRequest) -> HttpResponse {
+    let path = req.path().trim_start_matches('/');
+    let path = if path.is_empty() { "index.html" } else { path };
+
+    match STATIC_DIR.get_file(path) {
+        Some(file) => {
+            let body = file.contents();
+            let mime = mime_guess::from_path(path)
+                .first_or_octet_stream()
+                .to_string();
+            HttpResponse::Ok().content_type(mime).body(body)
+        }
+        None => HttpResponse::NotFound().body("404 Not Found"),
+    }
+}
+
 /// Main entry point.
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -96,10 +120,8 @@ async fn start_web_server(state: Arc<mqtt_broker::BrokerState>) -> anyhow::Resul
 
     let addr = format!("{}:{}", state.config.web_host, state.config.web_port);
     let state_data = web::Data::new(state);
-    let static_path = std::env::current_dir()?.join("mqtt-web").join("static");
 
     info!("Web management interface starting on http://{}", addr);
-    info!("Static files serving from: {:?}", static_path);
 
     let server = HttpServer::new(move || {
         App::new()
@@ -117,10 +139,8 @@ async fn start_web_server(state: Arc<mqtt_broker::BrokerState>) -> anyhow::Resul
             // WebSocket endpoints
             .route("/ws/subscribe", actix_web::web::get().to(api::ws_subscribe))
             .route("/mqtt", actix_web::web::get().to(api::ws_mqtt))
-            // Static files (frontend)
-            .service(actix_files::Files::new("/", static_path.clone())
-                .index_file("index.html")
-                .show_files_listing())
+            // Embedded static files (compiled into binary at build time)
+            .route("/{path:.*}", actix_web::web::get().to(serve_embedded_file))
     })
     .bind(&addr)?
     .run();
