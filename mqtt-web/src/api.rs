@@ -618,6 +618,7 @@ async fn handle_connect_after_decode(
                 let response = mqtt_broker::server::process_packet(
                     &mqtt_packet,
                     &client_id,
+                    username.as_deref().unwrap_or("anonymous"),
                     &state,
                     &broker_handle,
                 ).await

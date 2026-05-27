@@ -52,12 +52,18 @@ pub struct BrokerState {
     pub persistence: Arc<crate::persistence::Persistence>,
     /// Authenticator for MQTT client authentication.
     pub authenticator: crate::auth::Authenticator,
+    /// ACL checker for topic-level authorization.
+    pub acl: crate::auth::AclChecker,
 }
 
 impl BrokerState {
     /// Create a new broker state with the given config and persistence.
     pub fn new(config: config::BrokerConfig, persistence: Arc<crate::persistence::Persistence>) -> Self {
         let auth_method = config.auth_method.clone();
+        let acl_path = match &config.acl_method {
+            config::AclMethod::File { path } => path.clone(),
+            config::AclMethod::None => String::new(),
+        };
         BrokerState {
             config,
             sessions: DashMap::new(),
@@ -71,6 +77,7 @@ impl BrokerState {
             web_subscribers: DashMap::new(),
             persistence,
             authenticator: crate::auth::Authenticator::new(&auth_method),
+            acl: crate::auth::AclChecker::new(&acl_path),
         }
     }
 

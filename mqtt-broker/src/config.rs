@@ -31,6 +31,8 @@ pub struct BrokerConfig {
     pub web_auth_username: String,
     /// Password for API access.
     pub web_auth_password: String,
+    /// ACL method for topic-level authorization.
+    pub acl_method: AclMethod,
 }
 
 impl Default for BrokerConfig {
@@ -49,6 +51,7 @@ impl Default for BrokerConfig {
             web_auth_enabled: false,
             web_auth_username: "admin".to_string(),
             web_auth_password: "admin".to_string(),
+            acl_method: AclMethod::None,
         }
     }
 }
@@ -56,6 +59,15 @@ impl Default for BrokerConfig {
 #[derive(Debug, Clone)]
 pub enum AuthMethod {
     None,
+    File { path: String },
+}
+
+/// ACL (Access Control List) method.
+#[derive(Debug, Clone)]
+pub enum AclMethod {
+    /// No ACL checking — all operations allowed.
+    None,
+    /// File-based ACL rules.
     File { path: String },
 }
 
@@ -111,6 +123,13 @@ username = "admin"
 [persistence]
 # Database file path. Leave empty for default "broker.db"
 # db_path = "broker.db"
+
+# ACL (Access Control List) settings
+[acl]
+# ACL method: "none" or "file"
+method = "none"
+# Path to ACL rules file (used when method = "file")
+# acl_file = "acl.conf"
 "###,
     )
 }
@@ -158,6 +177,12 @@ pub fn load_config() -> BrokerConfig {
                 cfg.web_auth_enabled = toml_cfg.web_auth.enabled;
                 cfg.web_auth_username = toml_cfg.web_auth.username;
                 cfg.web_auth_password = toml_cfg.web_auth.password;
+                cfg.acl_method = match toml_cfg.acl.method.as_str() {
+                    "file" => AclMethod::File {
+                        path: toml_cfg.acl.acl_file.unwrap_or_else(|| "acl.conf".to_string()),
+                    },
+                    _ => AclMethod::None,
+                };
                 cfg
             }
             Err(e) => {
@@ -195,6 +220,8 @@ struct TomlConfig {
     persistence: PersistenceSection,
     #[serde(default)]
     web_auth: WebAuthSection,
+    #[serde(default)]
+    acl: AclSection,
 }
 
 #[derive(Debug, Deserialize)]
@@ -297,6 +324,22 @@ impl Default for WebAuthSection {
     }
 }
 
+#[derive(Debug, Deserialize)]
+struct AclSection {
+    #[serde(default = "default_acl_method")]
+    method: String,
+    acl_file: Option<String>,
+}
+
+impl Default for AclSection {
+    fn default() -> Self {
+        AclSection {
+            method: default_acl_method(),
+            acl_file: None,
+        }
+    }
+}
+
 fn default_tcp_host() -> String {
     "0.0.0.0".to_string()
 }
@@ -310,6 +353,9 @@ fn default_web_port() -> u16 {
     8080
 }
 fn default_auth_method() -> String {
+    "none".to_string()
+}
+fn default_acl_method() -> String {
     "none".to_string()
 }
 fn default_web_auth_username() -> String { "admin".to_string() }

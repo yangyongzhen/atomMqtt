@@ -12,7 +12,7 @@ port = 1883
 # Web management interface settings
 [web]
 host = "0.0.0.0"
-port = 8080
+port = 8081
 
 # Broker engine settings
 [broker]
@@ -45,3 +45,10 @@ password = "admin"
 [persistence]
 # Database file path. Leave empty for default "broker.db"
 # db_path = "broker.db"
+
+# ACL (Access Control List) — topic-level authorization
+[acl]
+# ACL method: "none" or "file"
+method = "file"
+# Path to ACL rules file (used when method = "file")
+acl_file = "acl.conf"

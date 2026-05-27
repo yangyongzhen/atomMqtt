@@ -379,6 +379,7 @@ async fn handle_connection(
                 let response = process_packet(
                     &mqtt_packet,
                     &client_id,
+                    username.as_deref().unwrap_or("anonymous"),
                     &state,
                     &broker_handle,
                 ).await?;
@@ -492,12 +493,13 @@ pub fn decode_packet_by_version(buf: &mut BytesMut, version: ProtocolVersion) ->
 pub async fn process_packet(
     packet: &MqttPacket,
     client_id: &str,
+    username: &str,
     state: &Arc<BrokerState>,
     broker_handle: &BrokerHandle,
 ) -> Result<Option<MqttPacket>, MqttError> {
     match packet {
-        MqttPacket::V311(p) => process_v3_packet(p, client_id, state, broker_handle).await,
-        MqttPacket::V5(p) => process_v5_packet(p, client_id, state, broker_handle).await,
+        MqttPacket::V311(p) => process_v3_packet(p, client_id, username, state, broker_handle).await,
+        MqttPacket::V5(p) => process_v5_packet(p, client_id, username, state, broker_handle).await,
     }
 }
 
@@ -505,11 +507,21 @@ pub async fn process_packet(
 async fn process_v3_packet(
     packet: &v3::types::MqttPacketV3,
     client_id: &str,
+    username: &str,
     state: &Arc<BrokerState>,
     broker_handle: &BrokerHandle,
 ) -> Result<Option<MqttPacket>, MqttError> {
     match packet {
         v3::types::MqttPacketV3::Publish(p) => {
+            // ── ACL check: PUBLISH ──
+            if !state.acl.authorize_publish(username, &p.topic) {
+                // For MQTT 3.1.1: silently drop the publish (no PUBACK even for QoS 1)
+                warn!("PUBLISH denied by ACL: user={}, topic={}", username, p.topic);
+                state.metrics.lock().unwrap().increment_messages_received();
+                state.metrics.lock().unwrap().increment_bytes_received(p.payload.len() as u64);
+                return Ok(None);
+            }
+
             state.metrics.lock().unwrap().increment_messages_received();
             state.metrics.lock().unwrap().increment_bytes_received(p.payload.len() as u64);
 
@@ -585,6 +597,14 @@ async fn process_v3_packet(
         v3::types::MqttPacketV3::Subscribe(p) => {
             let mut return_codes = Vec::new();
             for filter in &p.filters {
+                // ── ACL check: SUBSCRIBE ──
+                if !state.acl.authorize_subscribe(username, &filter.path) {
+                    warn!("SUBSCRIBE denied by ACL: user={}, filter={}", username, filter.path);
+                    // MQTT 3.1.1: return failure code 0x80 for denied topics
+                    return_codes.push(0x80u8);
+                    continue;
+                }
+
                 // Add subscription to tree
                 state.subscriptions.lock().unwrap().subscribe(client_id, &filter.path, filter.qos);
                 state.persistence.send_event(PersistEvent::SaveSubscription {
@@ -676,11 +696,44 @@ async fn process_v3_packet(
 async fn process_v5_packet(
     packet: &v5::types::MqttPacketV5,
     client_id: &str,
+    username: &str,
     state: &Arc<BrokerState>,
     broker_handle: &BrokerHandle,
 ) -> Result<Option<MqttPacket>, MqttError> {
     match packet {
         v5::types::MqttPacketV5::Publish(p) => {
+            // ── ACL check: PUBLISH (MQTT 5.0) ──
+            if !state.acl.authorize_publish(username, &p.topic) {
+                warn!("PUBLISH denied by ACL: user={}, topic={}", username, p.topic);
+                state.metrics.lock().unwrap().increment_messages_received();
+                state.metrics.lock().unwrap().increment_bytes_received(p.payload.len() as u64);
+                // Send PUBACK with NotAuthorized for QoS 1
+                if p.qos == QoS::AtLeastOnce {
+                    if let Some(pid) = p.packet_id {
+                        return Ok(Some(MqttPacket::V5(v5::types::MqttPacketV5::PubAck(
+                            v5::types::PubAckPacket {
+                                packet_id: pid,
+                                reason_code: v5::types::ReasonCode::NotAuthorized,
+                                properties: v5::properties::Properties::new(),
+                            }
+                        ))));
+                    }
+                }
+                // For QoS 2, send PUBREC with NotAuthorized
+                if p.qos == QoS::ExactlyOnce {
+                    if let Some(pid) = p.packet_id {
+                        return Ok(Some(MqttPacket::V5(v5::types::MqttPacketV5::PubRec(
+                            v5::types::PubRecPacket {
+                                packet_id: pid,
+                                reason_code: v5::types::ReasonCode::NotAuthorized,
+                                properties: v5::properties::Properties::new(),
+                            }
+                        ))));
+                    }
+                }
+                return Ok(None);
+            }
+
             state.metrics.lock().unwrap().increment_messages_received();
             state.metrics.lock().unwrap().increment_bytes_received(p.payload.len() as u64);
 
@@ -768,6 +821,13 @@ async fn process_v5_packet(
         v5::types::MqttPacketV5::Subscribe(p) => {
             let mut reason_codes = Vec::new();
             for filter in &p.filters {
+                // ── ACL check: SUBSCRIBE (MQTT 5.0) ──
+                if !state.acl.authorize_subscribe(username, &filter.path) {
+                    warn!("SUBSCRIBE denied by ACL: user={}, filter={}", username, filter.path);
+                    reason_codes.push(v5::types::ReasonCode::NotAuthorized);
+                    continue;
+                }
+
                 state.subscriptions.lock().unwrap().subscribe(client_id, &filter.path, filter.qos);
                 state.persistence.send_event(PersistEvent::SaveSubscription {
                     client_id: client_id.to_string(),
