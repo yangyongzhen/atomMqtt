@@ -72,6 +72,39 @@ async fn main() -> anyhow::Result<()> {
         state.wills.insert(will.client_id.clone(), will);
     }
 
+    // ── Startup cleanup: remove stale subscriptions ──
+    // Clean_session = true sessions should have been removed on disconnect.
+    // If they survived a crash / unclean shutdown, clean them up now.
+    let stale_clients: Vec<String> = state.sessions.iter()
+        .filter(|e| e.clean_session)
+        .map(|e| e.client_id.clone())
+        .collect();
+    for cid in &stale_clients {
+        state.subscriptions.lock().unwrap().unsubscribe_all(cid);
+        state.persistence.send_event(mqtt_broker::persistence::PersistEvent::RemoveClientSubscriptions(cid.clone()));
+        state.sessions.remove(cid);
+        state.persistence.send_event(mqtt_broker::persistence::PersistEvent::RemoveSession(cid.clone()));
+    }
+
+    // Also remove any subscriptions whose owning client no longer has a session
+    // (orphaned from a crash where session row was lost but subscriptions survived).
+    let all_subs = state.subscriptions.lock().unwrap().all_subscriptions();
+    let orphan_clients: Vec<String> = all_subs.iter()
+        .filter(|s| !state.sessions.contains_key(&s.client_id))
+        .map(|s| s.client_id.clone())
+        .collect::<std::collections::HashSet<_>>()
+        .into_iter()
+        .collect();
+    for cid in &orphan_clients {
+        state.subscriptions.lock().unwrap().unsubscribe_all(cid);
+        state.persistence.send_event(mqtt_broker::persistence::PersistEvent::RemoveClientSubscriptions(cid.clone()));
+    }
+
+    // Sync the subscriptions_active metric with the actual tree count
+    state.metrics.lock().unwrap().subscriptions_active = state.subscriptions.lock().unwrap().count() as u64;
+    info!("Startup cleanup: removed {} stale clean-session clients, {} orphan subscription clients",
+        stale_clients.len(), orphan_clients.len());
+
     // Graceful shutdown handler
     {
         let p = persistence_arc.clone();

@@ -140,6 +140,7 @@ pub async fn start_broker(state: Arc<BrokerState>) -> anyhow::Result<BrokerHandl
                         bg_state.persistence.send_event(PersistEvent::RemoveClientSubscriptions(client_id.clone()));
                         bg_state.sessions.remove(&client_id);
                         bg_state.persistence.send_event(PersistEvent::RemoveSession(client_id.clone()));
+                        bg_state.metrics.lock().unwrap().subscriptions_active = bg_state.subscriptions.lock().unwrap().count() as u64;
                     } else {
                         // Non-clean session: mark session as disconnected but keep subscriptions
                         if let Some(mut session) = bg_state.sessions.get_mut(&client_id) {
