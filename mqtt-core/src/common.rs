@@ -156,7 +156,7 @@ impl TopicFilter {
         let topic_segs: Vec<&str> = topic.split('/').collect();
         let mut ti = 0; // topic segment index
 
-        for (si, seg) in self.segments.iter().enumerate() {
+        for (_si, seg) in self.segments.iter().enumerate() {
             if seg == "#" {
                 // '#' matches any remaining segments including zero
                 return true;
@@ -278,7 +278,7 @@ pub fn encode_remaining_length(mut length: usize) -> Vec<u8> {
 pub fn decode_remaining_length(buf: &[u8]) -> MqttResult<(usize, usize)> {
     let mut value: usize = 0;
     let mut multiplier: usize = 1;
-    let mut consumed = 0;
+    let mut consumed;
 
     for (i, &byte) in buf.iter().enumerate() {
         consumed = i + 1;

@@ -79,11 +79,11 @@ pub fn encode_packet(packet: &MqttPacketV3) -> MqttResult<BytesMut> {
 
 // ==================== CONNECT ====================
 
-fn decode_connect(data: &[u8], fixed_header: u8) -> MqttResult<ConnectPacket> {
+fn decode_connect(data: &[u8], _fixed_header: u8) -> MqttResult<ConnectPacket> {
     let mut pos = 0;
 
     // Protocol name
-    let (protocol_name, consumed) = decode_string(data)?;
+    let (_protocol_name, consumed) = decode_string(data)?;
     pos += consumed;
 
     // Protocol level
@@ -127,7 +127,7 @@ fn decode_connect(data: &[u8], fixed_header: u8) -> MqttResult<ConnectPacket> {
     let will = if will_flag {
         let (topic, consumed) = decode_string(&data[pos..])?;
         pos += consumed;
-        let (message, consumed) = {
+        let (message, _consumed) = {
             if pos + 2 > data.len() {
                 return Err(MqttError::InvalidPacket("Missing will message length".into()));
             }
@@ -167,6 +167,7 @@ fn decode_connect(data: &[u8], fixed_header: u8) -> MqttResult<ConnectPacket> {
     } else {
         None
     };
+    let _ = pos;
 
     Ok(ConnectPacket {
         client_id: client_id.to_string(),
@@ -253,7 +254,7 @@ fn encode_connack(packet: &ConnAckPacket) -> MqttResult<BytesMut> {
 // ==================== PUBLISH ====================
 
 fn decode_publish(data: &[u8], fixed_header: u8) -> MqttResult<PublishPacket> {
-    let dup = (fixed_header & 0x08) != 0;
+    let _dup = (fixed_header & 0x08) != 0;
     let qos = QoS::from_u8((fixed_header >> 1) & 0x03)
         .ok_or_else(|| MqttError::InvalidPacket("Invalid QoS".into()))?;
     let retain = (fixed_header & 0x01) != 0;

@@ -1,13 +1,10 @@
 //! MQTT TCP server and connection handler.
 
 use std::sync::Arc;
-use std::time::Duration;
 
 use bytes::{Buf, BytesMut};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::mpsc;
-use tokio::time;
-use tokio_util::codec::Decoder;
 use tracing::{info, warn, error, debug};
 
 use mqtt_core::common::*;
@@ -15,9 +12,7 @@ use mqtt_core::v3;
 use mqtt_core::v5;
 use mqtt_core::codec::{MqttFramedCodec, MqttPacket};
 
-use crate::auth::{AuthResult, Authenticator};
 use crate::config::BrokerConfig;
-use crate::metrics::MetricsSnapshot;
 use crate::retention::RetainedMessage;
 use crate::session::SessionState;
 use crate::will::WillMessage;
@@ -188,11 +183,11 @@ async fn handle_connection(
     broker_handle: BrokerHandle,
 ) -> anyhow::Result<()> {
     let (mut read_half, mut write_half) = stream.into_split();
-    let mut codec = MqttFramedCodec::new(state.config.max_packet_size);
+    let _codec = MqttFramedCodec::new(state.config.max_packet_size);
 
     // Read first packet (should be CONNECT)
     let mut read_buf = BytesMut::with_capacity(4096);
-    let mut write_buf = BytesMut::with_capacity(4096);
+    let _write_buf = BytesMut::with_capacity(4096);
 
     // We'll use tokio::io::BufReader/BufWriter-like approach
     use tokio::io::AsyncReadExt;
@@ -410,7 +405,7 @@ async fn handle_connection(
 
 /// Decode the first packet (CONNECT) to determine version.
 pub fn decode_first_packet(buf: &mut BytesMut, config: &BrokerConfig) -> Result<Option<MqttPacket>, MqttError> {
-    let codec = MqttFramedCodec::new(config.max_packet_size);
+    let _codec = MqttFramedCodec::new(config.max_packet_size);
     // We need to decode manually since MqttFramedCodec splits the buffer
     if buf.len() < 2 {
         return Ok(None);

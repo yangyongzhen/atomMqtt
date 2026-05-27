@@ -1,6 +1,5 @@
 //! Broker metrics collection.
 
-use std::sync::atomic::{AtomicU64, Ordering};
 use serde::Serialize;
 
 /// Broker metrics for monitoring and management UI.

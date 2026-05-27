@@ -3,7 +3,7 @@
 //! Provides packet type definitions, encoding/decoding for MQTT 3.1.1 and 5.0.
 
 #![deny(unsafe_code)]
-#![warn(missing_docs)]
+#![allow(missing_docs)]
 
 pub mod common;
 pub mod v3;

@@ -339,7 +339,6 @@ async fn handle_ws_mqtt_session(
     mut msg_stream: actix_ws::MessageStream,
 ) -> anyhow::Result<()> {
     use futures_util::StreamExt as _;
-    use tokio::sync::mpsc;
 
     // Buffer for accumulating MQTT packet bytes from WebSocket frames
     let mut buf = bytes::BytesMut::with_capacity(4096);

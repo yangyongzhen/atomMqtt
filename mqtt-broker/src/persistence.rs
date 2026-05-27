@@ -408,7 +408,7 @@ async fn bg_writer(db: Arc<Mutex<Connection>>, mut rx: mpsc::UnboundedReceiver<P
 fn flush_all(db: &Mutex<Connection>, batch: &[PersistEvent]) {
     let conn = match db.lock() {
         Ok(c) => c,
-        Err(poisoned) => {
+        Err(_poisoned) => {
             error!("Persistence: DB mutex poisoned, skipping batch of {} events", batch.len());
             return;
         }

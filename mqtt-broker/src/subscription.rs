@@ -1,7 +1,7 @@
 //! Subscription management with topic tree (trie-based) for efficient matching.
 
 use std::collections::HashSet;
-use mqtt_core::common::{QoS, TopicFilter};
+use mqtt_core::common::QoS;
 
 /// A client's subscription to a topic filter.
 #[derive(Debug, Clone)]
