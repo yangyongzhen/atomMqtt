@@ -6,6 +6,12 @@ let startTime = Date.now();
 
 // ========== 认证管理 ==========
 
+function logout() {
+    sessionStorage.removeItem('web_username');
+    sessionStorage.removeItem('web_password');
+    window.location.href = '/login.html';
+}
+
 function getAuthHeaders() {
     const username = sessionStorage.getItem('web_username');
     const password = sessionStorage.getItem('web_password');

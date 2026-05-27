@@ -349,6 +349,23 @@ select {
     font-size: 12px;
 }
 
+.btn-logout {
+    margin-top: 8px;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    text-align: center;
+}
+.btn-logout:hover {
+    background: rgba(255, 82, 82, 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
 .btn-primary {
     background: var(--accent);
     border-color: var(--accent);

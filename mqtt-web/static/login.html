@@ -122,23 +122,23 @@
                 return;
             }
 
-            // 先测试凭据是否正确
+            // 使用 JSON POST 验证凭据（避免浏览器弹出基本认证对话框）
             try {
-                const encoded = btoa(username + ':' + password);
-                const resp = await fetch('/api/metrics', {
-                    headers: { 'Authorization': 'Basic ' + encoded }
+                const resp = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
                 });
 
-                if (resp.ok) {
+                const data = await resp.json();
+
+                if (data.success) {
                     // 凭据正确，存入 sessionStorage
                     sessionStorage.setItem('web_username', username);
                     sessionStorage.setItem('web_password', password);
                     window.location.href = '/';
-                } else if (resp.status === 401) {
-                    errorEl.textContent = '用户名或密码错误';
-                    errorEl.style.display = 'block';
                 } else {
-                    errorEl.textContent = '服务器错误: ' + resp.status;
+                    errorEl.textContent = data.error || '用户名或密码错误';
                     errorEl.style.display = 'block';
                 }
             } catch (err) {

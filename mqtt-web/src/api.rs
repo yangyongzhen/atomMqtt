@@ -333,6 +333,38 @@ pub async fn disconnect_client(
     }
 }
 
+#[derive(Deserialize)]
+pub struct LoginRequest {
+    pub username: String,
+    pub password: String,
+}
+
+/// POST /api/login - Verify web login credentials.
+///
+/// Accepts JSON `{ username, password }`, validates against configured web auth.
+/// Returns 200 on success (without WWW-Authenticate header, so the browser
+/// won't show its native auth dialog). Returns 401 on failure.
+pub async fn login(
+    state: web::Data<Arc<BrokerState>>,
+    body: web::Json<LoginRequest>,
+) -> impl Responder {
+    if !state.config.web_auth_enabled {
+        return HttpResponse::Ok().json(serde_json::json!({ "success": true }));
+    }
+
+    if body.username == state.config.web_auth_username
+        && body.password == state.config.web_auth_password
+    {
+        HttpResponse::Ok().json(serde_json::json!({ "success": true }))
+    } else {
+        HttpResponse::Unauthorized()
+            .json(serde_json::json!({
+                "success": false,
+                "error": "用户名或密码错误",
+            }))
+    }
+}
+
 /// GET /mqtt - Standard MQTT-over-WebSocket endpoint.
 ///
 /// Allows standard MQTT clients (MQTT.js, Paho, mosquitto_sub -W, etc.)

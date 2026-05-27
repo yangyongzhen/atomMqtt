@@ -161,6 +161,11 @@ async fn web_auth_middleware(
 
         if state.config.web_auth_enabled {
             use base64::Engine;
+            // Skip auth check for login endpoint (uses JSON POST, not Basic Auth)
+            if path == "/api/login" {
+                return next.call(req).await;
+            }
+
             let auth_header = req.headers().get("Authorization");
 
             let authenticated = match auth_header {
@@ -223,6 +228,8 @@ async fn start_web_server(state: Arc<mqtt_broker::BrokerState>) -> anyhow::Resul
             .service(api::get_broker_info)
             .service(api::publish_message)
             .service(api::disconnect_client)
+            // Login endpoint (bypassed from Basic Auth middleware)
+            .route("/api/login", actix_web::web::post().to(api::login))
             // WebSocket endpoints
             .route("/ws/subscribe", actix_web::web::get().to(api::ws_subscribe))
             .route("/mqtt", actix_web::web::get().to(api::ws_mqtt))
