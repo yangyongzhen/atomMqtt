@@ -1204,6 +1204,7 @@ dependencies = [
  "actix-web",
  "actix-ws",
  "anyhow",
+ "base64",
  "bytes",
  "chrono",
  "futures-util",

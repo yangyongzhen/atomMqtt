@@ -13,7 +13,8 @@ use mqtt_broker::persistence::Persistence;
 mod api;
 mod models;
 
-use actix_web::HttpResponse;
+use actix_web::{web, HttpResponse};
+use actix_web::middleware::Next;
 use include_dir::{include_dir, Dir};
 
 /// Embedded static files directory (compiled into binary).
@@ -147,6 +148,57 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// HTTP Basic Auth middleware for /api/ endpoints.
+async fn web_auth_middleware(
+    req: actix_web::dev::ServiceRequest,
+    next: Next<impl actix_web::body::MessageBody>,
+) -> Result<actix_web::dev::ServiceResponse<impl actix_web::body::MessageBody>, actix_web::Error> {
+    let path = req.path();
+
+    // Only protect /api/ routes
+    if path.starts_with("/api/") {
+        let state = req.app_data::<web::Data<std::sync::Arc<mqtt_broker::BrokerState>>>().unwrap();
+
+        if state.config.web_auth_enabled {
+            use base64::Engine;
+            let auth_header = req.headers().get("Authorization");
+
+            let authenticated = match auth_header {
+                Some(value) => {
+                    if let Ok(encoded) = value.to_str() {
+                        if encoded.starts_with("Basic ") {
+                            let encoded = &encoded[6..];
+                            let expected = format!("{}:{}", state.config.web_auth_username, state.config.web_auth_password);
+                            // Decode base64 and compare
+                            if let Ok(decoded) = base64::engine::general_purpose::STANDARD.decode(encoded) {
+                                let decoded_str = String::from_utf8_lossy(&decoded);
+                                decoded_str == expected
+                            } else {
+                                false
+                            }
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                }
+                None => false,
+            };
+
+            if !authenticated {
+                use actix_web::error::InternalError;
+                let response = HttpResponse::Unauthorized()
+                    .insert_header(("WWW-Authenticate", "Basic realm=\"AtomMQTT\""))
+                    .body("需要身份验证");
+                return Err(InternalError::from_response("Unauthorized", response).into());
+            }
+        }
+    }
+
+    next.call(req).await
+}
+
 /// Start the web management server.
 async fn start_web_server(state: Arc<mqtt_broker::BrokerState>) -> anyhow::Result<()> {
     use actix_web::{web, App, HttpServer, middleware};
@@ -160,6 +212,7 @@ async fn start_web_server(state: Arc<mqtt_broker::BrokerState>) -> anyhow::Resul
         App::new()
             .app_data(state_data.clone())
             .wrap(middleware::Logger::default())
+            .wrap(middleware::from_fn(web_auth_middleware))
             // API routes
             .service(api::get_metrics)
             .service(api::get_clients)

@@ -25,6 +25,12 @@ pub struct BrokerConfig {
     pub session_expiry_interval: u32,
     /// Persistence directory path. None = disable persistence.
     pub persistence_path: Option<String>,
+    /// Enable HTTP Basic Authentication for the /api/ endpoints.
+    pub web_auth_enabled: bool,
+    /// Username for API access.
+    pub web_auth_username: String,
+    /// Password for API access.
+    pub web_auth_password: String,
 }
 
 impl Default for BrokerConfig {
@@ -40,6 +46,9 @@ impl Default for BrokerConfig {
             auth_method: AuthMethod::None,
             session_expiry_interval: 3600,
             persistence_path: None,
+            web_auth_enabled: false,
+            web_auth_username: "admin".to_string(),
+            web_auth_password: "admin".to_string(),
         }
     }
 }
@@ -90,6 +99,14 @@ method = "none"
 # Path to password file (used when method = "file")
 # auth_file = "passwd"
 
+# Web management API authentication settings
+[web_auth]
+# Enable HTTP Basic Authentication for the /api/ endpoints
+enabled = false
+# Username and password for API access
+username = "admin"
+# password = "admin"
+
 # Persistence (SQLite) settings
 [persistence]
 # Database file path. Leave empty for default "broker.db"
@@ -138,6 +155,9 @@ pub fn load_config() -> BrokerConfig {
                     _ => AuthMethod::None,
                 };
                 cfg.persistence_path = toml_cfg.persistence.db_path;
+                cfg.web_auth_enabled = toml_cfg.web_auth.enabled;
+                cfg.web_auth_username = toml_cfg.web_auth.username;
+                cfg.web_auth_password = toml_cfg.web_auth.password;
                 cfg
             }
             Err(e) => {
@@ -173,6 +193,8 @@ struct TomlConfig {
     auth: AuthSection,
     #[serde(default)]
     persistence: PersistenceSection,
+    #[serde(default)]
+    web_auth: WebAuthSection,
 }
 
 #[derive(Debug, Deserialize)]
@@ -255,6 +277,26 @@ impl Default for PersistenceSection {
     }
 }
 
+#[derive(Debug, Deserialize)]
+struct WebAuthSection {
+    #[serde(default)]
+    enabled: bool,
+    #[serde(default = "default_web_auth_username")]
+    username: String,
+    #[serde(default = "default_web_auth_password")]
+    password: String,
+}
+
+impl Default for WebAuthSection {
+    fn default() -> Self {
+        WebAuthSection {
+            enabled: false,
+            username: default_web_auth_username(),
+            password: default_web_auth_password(),
+        }
+    }
+}
+
 fn default_tcp_host() -> String {
     "0.0.0.0".to_string()
 }
@@ -270,3 +312,5 @@ fn default_web_port() -> u16 {
 fn default_auth_method() -> String {
     "none".to_string()
 }
+fn default_web_auth_username() -> String { "admin".to_string() }
+fn default_web_auth_password() -> String { "admin".to_string() }

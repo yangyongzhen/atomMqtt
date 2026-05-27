@@ -32,6 +32,15 @@ method = "file"
 # Path to password file (used when method = "file")
 auth_file = "passwd"
 
+# Web management API authentication settings
+[web_auth]
+# Enable HTTP Basic Auth for /api/ endpoints
+enabled = true
+# Username for API access
+username = "admin"
+# Password for API access
+password = "admin"
+
 # Persistence (SQLite) settings
 [persistence]
 # Database file path. Leave empty for default "broker.db"
