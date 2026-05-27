@@ -42,6 +42,10 @@ enum Command {
         payload: String,
         #[arg(long, default_value = "test-pub")]
         client_id: String,
+        #[arg(long)]
+        username: Option<String>,
+        #[arg(long)]
+        password: Option<String>,
         #[arg(long, default_value_t = 0)]
         qos: u8,
         #[arg(long)]
@@ -53,6 +57,10 @@ enum Command {
         topic: String,
         #[arg(long, default_value = "test-sub")]
         client_id: String,
+        #[arg(long)]
+        username: Option<String>,
+        #[arg(long)]
+        password: Option<String>,
         #[arg(long, default_value_t = 0)]
         qos: u8,
     },
@@ -61,6 +69,10 @@ enum Command {
         broker: String,
         #[arg(long, default_value = "test-shell")]
         client_id: String,
+        #[arg(long)]
+        username: Option<String>,
+        #[arg(long)]
+        password: Option<String>,
     },
 }
 
@@ -164,14 +176,16 @@ async fn send_packet(stream: &mut TcpStream, packet: &MqttPacketV3) -> Result<()
 async fn mqtt_connect(
     stream: &mut TcpStream,
     client_id: &str,
+    username: Option<&str>,
+    password: Option<&str>,
 ) -> Result<ConnAckPacket> {
     let connect = ConnectPacket {
         client_id: client_id.to_string(),
         clean_session: true,
         keep_alive: 60,
         will: None,
-        username: None,
-        password: None,
+        username: username.map(|s| s.to_string()),
+        password: password.map(|s| s.to_string()),
     };
     send_packet(stream, &MqttPacketV3::Connect(connect)).await?;
 
@@ -247,6 +261,8 @@ async fn run_pub(
     topic: &str,
     payload: &str,
     client_id: &str,
+    username: Option<&str>,
+    password: Option<&str>,
     qos: u8,
     retain: bool,
 ) -> Result<()> {
@@ -255,7 +271,7 @@ async fn run_pub(
     let mut stream = TcpStream::connect(broker)
         .await
         .context("无法连接 Broker")?;
-    mqtt_connect(&mut stream, client_id).await?;
+    mqtt_connect(&mut stream, client_id, username, password).await?;
 
     let pid = if qos != QoS::AtMostOnce {
         Some(next_packet_id())
@@ -295,6 +311,8 @@ async fn run_sub(
     broker: &str,
     topic: &str,
     client_id: &str,
+    username: Option<&str>,
+    password: Option<&str>,
     qos: u8,
 ) -> Result<()> {
     let qos = parse_qos(qos)?;
@@ -311,8 +329,8 @@ async fn run_sub(
         clean_session: true,
         keep_alive: 60,
         will: None,
-        username: None,
-        password: None,
+        username: username.map(|s| s.to_string()),
+        password: password.map(|s| s.to_string()),
     };
     let bytes = encode_packet(&MqttPacketV3::Connect(connect))
         .map_err(|e| anyhow!("编码失败: {e}"))?;
@@ -412,7 +430,7 @@ async fn run_sub(
 // 交互式 Shell
 // ---------------------------------------------------------------------------
 
-async fn run_shell(broker: &str, client_id: &str) -> Result<()> {
+async fn run_shell(broker: &str, client_id: &str, username: Option<&str>, password: Option<&str>) -> Result<()> {
     let stream = Arc::new(
         TcpStream::connect(broker)
             .await
@@ -427,8 +445,8 @@ async fn run_shell(broker: &str, client_id: &str) -> Result<()> {
             clean_session: true,
             keep_alive: 60,
             will: None,
-            username: None,
-            password: None,
+            username: username.map(|s| s.to_string()),
+            password: password.map(|s| s.to_string()),
         };
         let bytes = encode_packet(&MqttPacketV3::Connect(connect))
             .map_err(|e| anyhow!("编码失败: {e}"))?;
@@ -679,14 +697,14 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Pub { broker, topic, payload, client_id, qos, retain } => {
-            run_pub(&broker, &topic, &payload, &client_id, qos, retain).await
+        Command::Pub { broker, topic, payload, client_id, username, password, qos, retain } => {
+            run_pub(&broker, &topic, &payload, &client_id, username.as_deref(), password.as_deref(), qos, retain).await
         }
-        Command::Sub { broker, topic, client_id, qos } => {
-            run_sub(&broker, &topic, &client_id, qos).await
+        Command::Sub { broker, topic, client_id, username, password, qos } => {
+            run_sub(&broker, &topic, &client_id, username.as_deref(), password.as_deref(), qos).await
         }
-        Command::Shell { broker, client_id } => {
-            run_shell(&broker, &client_id).await
+        Command::Shell { broker, client_id, username, password } => {
+            run_shell(&broker, &client_id, username.as_deref(), password.as_deref()).await
         }
     }
 }

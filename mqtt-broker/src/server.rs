@@ -209,7 +209,7 @@ async fn handle_connection(
     };
 
     // Process CONNECT and get version
-    let (client_id, version, keep_alive, clean_session, username, will_opt) = match packet {
+    let (client_id, version, keep_alive, clean_session, username, password, will_opt) = match packet {
         MqttPacket::V311(v3::types::MqttPacketV3::Connect(connect)) => {
             let will = connect.will.as_ref().map(|w| WillMessage {
                 client_id: String::new(), // filled below
@@ -220,7 +220,7 @@ async fn handle_connection(
                 delay_interval: 0,
                 created_at: std::time::Instant::now(),
             });
-            (connect.client_id, ProtocolVersion::V311, connect.keep_alive, connect.clean_session, connect.username, will)
+            (connect.client_id, ProtocolVersion::V311, connect.keep_alive, connect.clean_session, connect.username, connect.password, will)
         }
         MqttPacket::V5(v5::types::MqttPacketV5::Connect(connect)) => {
             let will = connect.will.as_ref().map(|w| WillMessage {
@@ -232,10 +232,43 @@ async fn handle_connection(
                 delay_interval: w.delay_interval,
                 created_at: std::time::Instant::now(),
             });
-            (connect.client_id, ProtocolVersion::V5, connect.keep_alive, connect.clean_start, connect.username, will)
+            (connect.client_id, ProtocolVersion::V5, connect.keep_alive, connect.clean_start, connect.username, connect.password, will)
         }
         _ => {
             warn!("First packet is not CONNECT");
+            return Ok(());
+        }
+    };
+
+    // ── Authentication check ──
+    let username = match state.authenticator.authenticate(
+        state.config.allow_anonymous,
+        username.as_deref(),
+        password.as_deref(),
+    ) {
+        crate::auth::AuthResult::Success { username } => Some(username),
+        crate::auth::AuthResult::Denied { reason } => {
+            warn!("Authentication failed for {}: {:?}", client_id, reason);
+            let connack = match version {
+                ProtocolVersion::V311 => {
+                    MqttPacket::V311(v3::types::MqttPacketV3::ConnAck(v3::types::ConnAckPacket {
+                        session_present: false,
+                        return_code: reason.to_v3_return_code(),
+                    }))
+                }
+                ProtocolVersion::V5 => {
+                    MqttPacket::V5(v5::types::MqttPacketV5::ConnAck(v5::types::ConnAckPacket {
+                        session_present: false,
+                        reason_code: reason.to_v5_reason_code(),
+                        properties: mqtt_core::v5::properties::Properties::new(),
+                    }))
+                }
+            };
+            let encoded = mqtt_core::codec::encode_packet(&connack)?;
+            write_half.writable().await?;
+            write_half.write(&encoded).await?;
+            state.metrics.lock().unwrap().increment_packets_sent();
+            state.metrics.lock().unwrap().increment_bytes_sent(encoded.len() as u64);
             return Ok(());
         }
     };

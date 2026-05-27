@@ -434,17 +434,56 @@ async fn handle_connect_after_decode(
     use tokio::sync::mpsc;
 
     // ── Step 3: Extract CONNECT fields ──
-    let (client_id, version, keep_alive, clean_session, username) = match &packet {
+    let (client_id, version, keep_alive, clean_session, username, password) = match &packet {
         mqtt_core::codec::MqttPacket::V311(mqtt_core::v3::types::MqttPacketV3::Connect(c)) => {
             (c.client_id.clone(), mqtt_core::common::ProtocolVersion::V311,
-             c.keep_alive, c.clean_session, c.username.clone())
+             c.keep_alive, c.clean_session, c.username.clone(), c.password.clone())
         }
         mqtt_core::codec::MqttPacket::V5(mqtt_core::v5::types::MqttPacketV5::Connect(c)) => {
             (c.client_id.clone(), mqtt_core::common::ProtocolVersion::V5,
-             c.keep_alive, c.clean_start, c.username.clone())
+             c.keep_alive, c.clean_start, c.username.clone(), c.password.clone())
         }
         _ => {
             tracing::warn!("WS MQTT: first packet is not CONNECT");
+            return Ok(());
+        }
+    };
+
+    // ── Authentication check ──
+    let username = match state.authenticator.authenticate(
+        state.config.allow_anonymous,
+        username.as_deref(),
+        password.as_deref(),
+    ) {
+        mqtt_broker::auth::AuthResult::Success { username } => Some(username),
+        mqtt_broker::auth::AuthResult::Denied { reason } => {
+            tracing::warn!("WS MQTT authentication failed for {}: {:?}", client_id, reason);
+            // Send CONNACK with reject reason code
+            let connack = match version {
+                mqtt_core::common::ProtocolVersion::V311 => {
+                    mqtt_core::codec::MqttPacket::V311(mqtt_core::v3::types::MqttPacketV3::ConnAck(
+                        mqtt_core::v3::types::ConnAckPacket {
+                            session_present: false,
+                            return_code: reason.to_v3_return_code(),
+                        }
+                    ))
+                }
+                mqtt_core::common::ProtocolVersion::V5 => {
+                    mqtt_core::codec::MqttPacket::V5(mqtt_core::v5::types::MqttPacketV5::ConnAck(
+                        mqtt_core::v5::types::ConnAckPacket {
+                            session_present: false,
+                            reason_code: reason.to_v5_reason_code(),
+                            properties: mqtt_core::v5::properties::Properties::new(),
+                        }
+                    ))
+                }
+            };
+            let encoded = mqtt_core::codec::encode_packet(&connack)
+                .map_err(|e| anyhow::anyhow!("Failed to encode CONNACK: {}", e))?;
+            session.binary(encoded.to_vec()).await
+                .map_err(|e| anyhow::anyhow!("Failed to send CONNACK: {}", e))?;
+            state.metrics.lock().unwrap().increment_packets_sent();
+            state.metrics.lock().unwrap().increment_bytes_sent(encoded.len() as u64);
             return Ok(());
         }
     };

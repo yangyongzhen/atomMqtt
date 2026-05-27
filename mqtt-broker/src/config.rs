@@ -50,13 +50,6 @@ pub enum AuthMethod {
     File { path: String },
 }
 
-/// Authentication credentials.
-#[derive(Debug, Clone)]
-pub struct Credentials {
-    pub username: String,
-    pub password: String,
-}
-
 /// Configuration file name.
 const CONFIG_FILE: &str = "config.toml";
 

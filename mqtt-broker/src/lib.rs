@@ -50,11 +50,14 @@ pub struct BrokerState {
     pub web_subscribers: DashMap<String, tokio::sync::mpsc::UnboundedSender<String>>,
     /// Persistence layer for sessions, subscriptions, and retained messages.
     pub persistence: Arc<crate::persistence::Persistence>,
+    /// Authenticator for MQTT client authentication.
+    pub authenticator: crate::auth::Authenticator,
 }
 
 impl BrokerState {
     /// Create a new broker state with the given config and persistence.
     pub fn new(config: config::BrokerConfig, persistence: Arc<crate::persistence::Persistence>) -> Self {
+        let auth_method = config.auth_method.clone();
         BrokerState {
             config,
             sessions: DashMap::new(),
@@ -67,6 +70,7 @@ impl BrokerState {
             connections: DashMap::new(),
             web_subscribers: DashMap::new(),
             persistence,
+            authenticator: crate::auth::Authenticator::new(&auth_method),
         }
     }
 
