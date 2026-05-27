@@ -140,6 +140,9 @@ cargo run -p mqtt-client -- shell 127.0.0.1:1883 --client-id my-shell
 | 📡 订阅消息 | **通过 WebSocket 实时接收订阅的消息** |
 | ℹ️ 服务器信息 | Broker 配置和运行状态 |
 
+> **前端嵌入**：前端静态文件（HTML/CSS/JS）在编译时通过 `include_dir!` 宏直接嵌入到二进制中，运行时无需读取磁盘。
+> 生成单文件 `.exe` 即可部署，无额外依赖，Windows/macOS/Linux 全平台兼容。
+
 ---
 
 ## API 接口

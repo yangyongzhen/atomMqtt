@@ -48,8 +48,8 @@ async fn main() -> anyhow::Result<()> {
 
     info!("AtomMQTT Broker starting...");
 
-    // Load configuration (with defaults for now)
-    let config = mqtt_broker::config::BrokerConfig::default();
+    // Load configuration (from config.toml or defaults)
+    let config = mqtt_broker::config::load_config();
 
     // Create persistence for state restoration
     let persistence = Persistence::open(&config).expect("Failed to open persistence DB");

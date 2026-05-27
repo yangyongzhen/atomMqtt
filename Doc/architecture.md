@@ -213,14 +213,37 @@ mqtt-web/src/
 ├── main.rs         # 入口：启动 Broker + Web 服务器
 ├── api.rs          # REST API 处理器 + WebSocket 处理
 └── models.rs       # 响应模型
-
-mqtt-web/static/
-├── index.html      # 单页应用入口
-├── css/
-│   └── dashboard.css   # 样式
-└── js/
-    └── dashboard.js     # 前端交互逻辑
 ```
+
+> 前端静态文件（HTML / CSS / JS）在编译时通过 `include_dir!` 宏直接嵌入到二进制中，运行时无需读取磁盘。
+> 无需额外的静态文件中间件依赖，生成单文件 `.exe` 即可部署。
+
+#### 嵌入式静态文件
+
+前端的 `index.html`、`dashboard.css`、`dashboard.js` 等文件在 `build.rs` 阶段被编译到 `mqtt-web` 的二进制中。一条通配路由 `/{path:.*}` 指向 `serve_embedded_file` 函数：
+
+```rust
+static STATIC_DIR: Dir<'_> = include_dir!("mqtt-web/static");
+
+async fn serve_embedded_file(req: actix_web::HttpRequest) -> HttpResponse {
+    let path = req.path().trim_start_matches('/');
+    let path = if path.is_empty() { "index.html" } else { path };
+    match STATIC_DIR.get_file(path) {
+        Some(file) => {
+            let mime = mime_guess::from_path(path).first_or_octet_stream().to_string();
+            HttpResponse::Ok().content_type(mime).body(file.contents())
+        }
+        None => HttpResponse::NotFound().body("404 Not Found"),
+    }
+}
+```
+
+优点：
+- **单文件分发** — 一个 `.exe` 包含全部前端，放到任何目录都可直接运行
+- **零 I/O 等待** — 不走磁盘读取，性能恒定
+- **Windows 兼容** — 规避了 Windows 下 actix-files 的 0 字节 Bug
+- **自动 MIME** — 通过 `mime_guess` 根据文件扩展名自动识别 Content-Type
+- **添加文件无需改代码** — 往 `static/` 目录加任何文件，`include_dir!` 自动嵌入
 
 #### REST API 路由
 

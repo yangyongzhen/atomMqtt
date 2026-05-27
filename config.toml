@@ -1,0 +1,38 @@
+# ==========================================
+# AtomMQTT Broker Configuration
+#
+# If this file is deleted, it will be regenerated with defaults.
+# ==========================================
+
+# MQTT TCP listener settings
+[tcp]
+host = "0.0.0.0"
+port = 1883
+
+# Web management interface settings
+[web]
+host = "0.0.0.0"
+port = 8080
+
+# Broker engine settings
+[broker]
+# Maximum incoming packet size in bytes (default: 10 MB)
+max_packet_size = 10485760
+# Maximum QoS level: 0 = AtMostOnce, 1 = AtLeastOnce, 2 = ExactlyOnce
+max_qos = 2
+# Allow anonymous (unauthenticated) connections
+allow_anonymous = true
+# Session expiry interval in seconds (0 = never expire)
+session_expiry_interval = 3600
+
+# Authentication settings
+[auth]
+# Authentication method: "none" or "file"
+method = "none"
+# Path to password file (used when method = "file")
+# auth_file = "passwd"
+
+# Persistence (SQLite) settings
+[persistence]
+# Database file path. Leave empty for default "broker.db"
+# db_path = "broker.db"

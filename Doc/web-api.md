@@ -361,15 +361,15 @@ WebSocket 错误以 JSON 消息返回：
 ### 前端架构
 
 ```
-index.html (单页应用)
-├── 仪表盘 (页面)
-├── 客户端 (页面)
-├── 订阅 (页面)
-├── 保留消息 (页面)
-├── 发布消息 (页面)
-├── 订阅消息 (页面 + WebSocket)
-└── 服务器信息 (页面)
+static/  (编译时嵌入到二进制)
+├── index.html          (单页应用入口)
+├── css/dashboard.css   (样式)
+└── js/dashboard.js     (交互逻辑)
 ```
+
+> 前端文件在编译时通过 `include_dir!("mqtt-web/static")` 宏直接嵌入到 `mqtt-web` 二进制中。
+> 运行时使用一条通配路由 `/{path:.*}` + `serve_embedded_file` 函数提供服务，无需任何磁盘 I/O。
+> 添加新文件到 `static/` 目录后重新编译即可自动包含，无需修改代码。
 
 ### 自动刷新机制
 
