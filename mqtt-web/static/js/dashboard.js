@@ -156,7 +156,7 @@ async function refreshRetained() {
         const messages = await resp.json();
         
         if (messages.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">暂无保留消息</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">暂无保留消息</td></tr>';
             return;
         }
         
@@ -166,10 +166,27 @@ async function refreshRetained() {
                 <td>${msg.qos}</td>
                 <td>${formatBytes(msg.payload_size)}</td>
                 <td class="payload-preview">${escapeHtml(msg.payload_preview)}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteRetained('${escapeHtml(msg.topic)}')">删除</button></td>
             </tr>
         `).join('');
     } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" class="empty-state">加载失败: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-state">加载失败: ${err.message}</td></tr>`;
+    }
+}
+
+async function deleteRetained(topic) {
+    if (!confirm('确定要删除保留消息 [' + topic + '] 吗？')) return;
+    try {
+        const resp = await fetch(`${API_BASE}/retained/${encodeURIComponent(topic)}`, { method: 'DELETE' });
+        const data = await resp.json();
+        if (data.success) {
+            showToast('保留消息已删除', 'success');
+            refreshRetained();
+        } else {
+            showToast('删除失败: ' + JSON.stringify(data), 'error');
+        }
+    } catch (err) {
+        showToast('删除失败: ' + err.message, 'error');
     }
 }
 

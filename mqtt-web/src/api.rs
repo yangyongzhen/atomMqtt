@@ -1,7 +1,7 @@
 //! REST API endpoints for the broker management interface.
 
 use std::sync::Arc;
-use actix_web::{web, get, post, HttpResponse, Responder};
+use actix_web::{web, get, post, delete, HttpResponse, Responder};
 use bytes::Buf;
 use serde::Deserialize;
 
@@ -105,6 +105,34 @@ pub async fn get_retained_messages(state: web::Data<Arc<BrokerState>>) -> impl R
         }
     }).collect();
     HttpResponse::Ok().json(messages)
+}
+
+/// DELETE /api/retained/{topic} - Delete a retained message.
+#[delete("/api/retained/{topic}")]
+pub async fn delete_retained_message(
+    state: web::Data<Arc<BrokerState>>,
+    path: web::Path<String>,
+) -> impl Responder {
+    let topic = path.into_inner();
+
+    if !state.retained.contains_key(&topic) {
+        return HttpResponse::NotFound().json(serde_json::json!({
+            "success": false,
+            "error": format!("Retained message '{}' not found", topic),
+        }));
+    }
+
+    state.retained.remove(&topic);
+
+    // Notify persistence layer to remove from DB
+    state.persistence.send_event(
+        mqtt_broker::persistence::PersistEvent::RemoveRetained(topic.clone()),
+    );
+
+    HttpResponse::Ok().json(serde_json::json!({
+        "success": true,
+        "topic": topic,
+    }))
 }
 
 /// POST /api/publish - Publish a test message via the API.

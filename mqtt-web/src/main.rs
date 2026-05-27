@@ -166,6 +166,7 @@ async fn start_web_server(state: Arc<mqtt_broker::BrokerState>) -> anyhow::Resul
             .service(api::get_client_detail)
             .service(api::get_subscriptions)
             .service(api::get_retained_messages)
+            .service(api::delete_retained_message)
             .service(api::get_broker_info)
             .service(api::publish_message)
             .service(api::disconnect_client)
