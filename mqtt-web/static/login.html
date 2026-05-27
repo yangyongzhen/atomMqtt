@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AtomMQTT Broker - 登录</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        body {
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .login-wrapper {
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+        }
+        .login-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 40px 32px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .login-header h1 {
+            font-size: 24px;
+            margin: 0 0 8px;
+            color: var(--text-primary);
+        }
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0;
+        }
+        .login-form .form-group {
+            margin-bottom: 20px;
+        }
+        .login-form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .login-form input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .login-form input:focus {
+            border-color: var(--primary);
+        }
+        .login-form .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            margin-top: 8px;
+        }
+        .login-error {
+            color: var(--danger);
+            font-size: 13px;
+            text-align: center;
+            margin-top: 12px;
+            display: none;
+        }
+        .login-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🔐 AtomMQTT</h1>
+                <p>管理平台需要身份验证</p>
+            </div>
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="btn btn-primary">登 录</button>
+                <div class="login-error" id="loginError"></div>
+            </form>
+            <div class="login-footer">
+                AtomMQTT Broker 管理平台
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('loginError');
+
+            if (!username || !password) {
+                errorEl.textContent = '请输入用户名和密码';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            // 先测试凭据是否正确
+            try {
+                const encoded = btoa(username + ':' + password);
+                const resp = await fetch('/api/metrics', {
+                    headers: { 'Authorization': 'Basic ' + encoded }
+                });
+
+                if (resp.ok) {
+                    // 凭据正确，存入 sessionStorage
+                    sessionStorage.setItem('web_username', username);
+                    sessionStorage.setItem('web_password', password);
+                    window.location.href = '/';
+                } else if (resp.status === 401) {
+                    errorEl.textContent = '用户名或密码错误';
+                    errorEl.style.display = 'block';
+                } else {
+                    errorEl.textContent = '服务器错误: ' + resp.status;
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                errorEl.textContent = '连接失败: ' + err.message;
+                errorEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

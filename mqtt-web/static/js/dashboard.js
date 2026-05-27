@@ -4,6 +4,59 @@ const API_BASE = '/api';
 let refreshInterval = null;
 let startTime = Date.now();
 
+// ========== 认证管理 ==========
+
+function getAuthHeaders() {
+    const username = sessionStorage.getItem('web_username');
+    const password = sessionStorage.getItem('web_password');
+    if (username && password) {
+        const encoded = btoa(username + ':' + password);
+        return { 'Authorization': 'Basic ' + encoded };
+    }
+    return {};
+}
+
+function redirectToLogin() {
+    sessionStorage.removeItem('web_username');
+    sessionStorage.removeItem('web_password');
+    window.location.href = '/login.html';
+}
+
+function checkAuth() {
+    const username = sessionStorage.getItem('web_username');
+    const password = sessionStorage.getItem('web_password');
+    if (!username || !password) {
+        redirectToLogin();
+        return false;
+    }
+    return true;
+}
+
+/**
+ * 带认证的 fetch 封装。
+ * 自动附加 Authorization 头，遇到 401 跳转到登录页。
+ */
+async function apiFetch(url, options = {}) {
+    if (!checkAuth()) {
+        // 如果没凭证，checkAuth 已经重定向了
+        throw new Error('未登录');
+    }
+
+    const headers = {
+        ...getAuthHeaders(),
+        ...options.headers,
+    };
+
+    const resp = await fetch(url, { ...options, headers });
+
+    if (resp.status === 401) {
+        redirectToLogin();
+        throw new Error('身份验证失败，请重新登录');
+    }
+
+    return resp;
+}
+
 // Navigation
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
@@ -44,7 +97,7 @@ document.getElementById('publishForm').addEventListener('submit', async (e) => {
     resultBox.classList.remove('hidden', 'success', 'error');
 
     try {
-        const resp = await fetch(`${API_BASE}/publish`, {
+        const resp = await apiFetch(`${API_BASE}/publish`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ topic, payload, qos, retain })
@@ -55,6 +108,8 @@ document.getElementById('publishForm').addEventListener('submit', async (e) => {
             ? `✅ 已发布到 "${topic}"，${data.subscriber_count} 个订阅者`
             : `❌ 发布失败: ${JSON.stringify(data)}`;
     } catch (err) {
+        // 401 等场景不显示错误（已跳转登录页）
+        if (err.message === '未登录' || err.message === '身份验证失败，请重新登录') return;
         resultBox.className = 'result-box error';
         resultBox.textContent = `❌ 请求失败: ${err.message}`;
     }
@@ -63,7 +118,7 @@ document.getElementById('publishForm').addEventListener('submit', async (e) => {
 // Dashboard
 async function refreshDashboard() {
     try {
-        const resp = await fetch(`${API_BASE}/metrics`);
+        const resp = await apiFetch(`${API_BASE}/metrics`);
         const metrics = await resp.json();
         
         document.getElementById('clientsConnected').textContent = metrics.clients_connected ?? 0;
@@ -78,6 +133,7 @@ async function refreshDashboard() {
         const uptime = Math.floor((Date.now() - startTime) / 1000);
         document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
     } catch (err) {
+        if (err.message === '未登录' || err.message === '身份验证失败，请重新登录') return;
         console.error('Dashboard refresh failed:', err);
     }
 }
@@ -86,7 +142,7 @@ async function refreshDashboard() {
 async function refreshClients() {
     const tbody = document.getElementById('clientsTableBody');
     try {
-        const resp = await fetch(`${API_BASE}/clients`);
+        const resp = await apiFetch(`${API_BASE}/clients`);
         const clients = await resp.json();
         
         if (clients.length === 0) {
@@ -107,6 +163,7 @@ async function refreshClients() {
             </tr>
         `).join('');
     } catch (err) {
+        if (err.message === '未登录' || err.message === '身份验证失败，请重新登录') return;
         tbody.innerHTML = `<tr><td colspan="6" class="empty-state">加载失败: ${err.message}</td></tr>`;
     }
 }
@@ -114,10 +171,11 @@ async function refreshClients() {
 async function disconnectClient(clientId) {
     if (!confirm(`确定要断开客户端 "${clientId}" 吗？`)) return;
     try {
-        const resp = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}/disconnect`, { method: 'POST' });
+        const resp = await apiFetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}/disconnect`, { method: 'POST' });
         const data = await resp.json();
         if (data.success) refreshClients();
     } catch (err) {
+        if (err.message === '未登录' || err.message === '身份验证失败，请重新登录') return;
         alert('操作失败: ' + err.message);
     }
 }
@@ -126,7 +184,7 @@ async function disconnectClient(clientId) {
 async function refreshSubscriptions() {
     const tbody = document.getElementById('subscriptionsTableBody');
     try {
-        const resp = await fetch(`${API_BASE}/subscriptions`);
+        const resp = await apiFetch(`${API_BASE}/subscriptions`);
         const subs = await resp.json();
         
         document.getElementById('subCount').textContent = subs.length;
@@ -144,6 +202,7 @@ async function refreshSubscriptions() {
             </tr>
         `).join('');
     } catch (err) {
+        if (err.message === '未登录' || err.message === '身份验证失败，请重新登录') return;
         tbody.innerHTML = `<tr><td colspan="3" class="empty-state">加载失败: ${err.message}</td></tr>`;
     }
 }
@@ -152,7 +211,7 @@ async function refreshSubscriptions() {
 async function refreshRetained() {
     const tbody = document.getElementById('retainedTableBody');
     try {
-        const resp = await fetch(`${API_BASE}/retained`);
+        const resp = await apiFetch(`${API_BASE}/retained`);
         const messages = await resp.json();
         
         if (messages.length === 0) {
@@ -170,6 +229,7 @@ async function refreshRetained() {
             </tr>
         `).join('');
     } catch (err) {
+        if (err.message === '未登录' || err.message === '身份验证失败，请重新登录') return;
         tbody.innerHTML = `<tr><td colspan="5" class="empty-state">加载失败: ${err.message}</td></tr>`;
     }
 }
@@ -177,7 +237,7 @@ async function refreshRetained() {
 async function deleteRetained(topic) {
     if (!confirm('确定要删除保留消息 [' + topic + '] 吗？')) return;
     try {
-        const resp = await fetch(`${API_BASE}/retained/${encodeURIComponent(topic)}`, { method: 'DELETE' });
+        const resp = await apiFetch(`${API_BASE}/retained/${encodeURIComponent(topic)}`, { method: 'DELETE' });
         const data = await resp.json();
         if (data.success) {
             showToast('保留消息已删除', 'success');
@@ -186,6 +246,7 @@ async function deleteRetained(topic) {
             showToast('删除失败: ' + JSON.stringify(data), 'error');
         }
     } catch (err) {
+        if (err.message === '未登录' || err.message === '身份验证失败，请重新登录') return;
         showToast('删除失败: ' + err.message, 'error');
     }
 }
@@ -193,7 +254,7 @@ async function deleteRetained(topic) {
 // Server Info
 async function refreshInfo() {
     try {
-        const resp = await fetch(`${API_BASE}/broker/info`);
+        const resp = await apiFetch(`${API_BASE}/broker/info`);
         const info = await resp.json();
         
         document.getElementById('infoName').textContent = info.name;
@@ -207,6 +268,7 @@ async function refreshInfo() {
         document.getElementById('infoAnonymous').textContent = info.config.allow_anonymous ? '✅ 允许' : '❌ 禁止';
         document.getElementById('infoMaxPkt').textContent = formatBytes(info.config.max_packet_size);
     } catch (err) {
+        if (err.message === '未登录' || err.message === '身份验证失败，请重新登录') return;
         console.error('Info refresh failed:', err);
     }
 }
@@ -469,6 +531,9 @@ function initSubscribePage() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', () => {
+    // 检查是否有认证凭据，没有则跳转到登录页
+    if (!checkAuth()) return;
+
     // 立即拉取仪表盘数据（HTML 中的 0 会被覆盖）
     refreshDashboard();
     
