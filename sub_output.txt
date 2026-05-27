@@ -1,5 +1,0 @@
-[2m2026-05-26T05:19:39.945289Z[0m [32m INFO[0m [2mmqtt_client[0m[2m:[0m 连接成功: Accepted
-[2m2026-05-26T05:19:39.948694Z[0m [32m INFO[0m [2mmqtt_client[0m[2m:[0m 订阅成功: packet_id=1, codes=[SuccessQoS1]
-📡 等待消息 (topic=verify/test)，按 Ctrl+C 退出...
-[2m2026-05-26T05:22:16.471438Z[0m [31mERROR[0m [2mmqtt_client[0m[2m:[0m 接收消息失败: 远程主机强迫关闭了一个现有的连接。 (os error 10054)
-[2m2026-05-26T05:22:16.472021Z[0m [32m INFO[0m [2mmqtt_client[0m[2m:[0m 已退出

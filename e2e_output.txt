@@ -1,8 +1,0 @@
-[2m2026-05-26T05:22:48.698904Z[0m [32m INFO[0m [2mmqtt_client[0m[2m:[0m 连接成功: Accepted
-[2m2026-05-26T05:22:48.702130Z[0m [32m INFO[0m [2mmqtt_client[0m[2m:[0m 订阅成功: packet_id=1, codes=[SuccessQoS1]
-📡 等待消息 (topic=webui/test)，按 Ctrl+C 退出...
-
-📩 [webui/test] QoS=AtMostOnce (28字节)
-  载荷: 从Web界面发送的消息!
-[2m2026-05-26T05:35:10.530593Z[0m [31mERROR[0m [2mmqtt_client[0m[2m:[0m 接收消息失败: 远程主机强迫关闭了一个现有的连接。 (os error 10054)
-[2m2026-05-26T05:35:10.531219Z[0m [32m INFO[0m [2mmqtt_client[0m[2m:[0m 已退出

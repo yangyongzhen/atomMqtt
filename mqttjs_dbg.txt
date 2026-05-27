@@ -1,8 +1,0 @@
-=== START ===
-node version: v24.15.0
-mqtt loaded OK
-ws module available: function
-client created: MqttClient
-stream: no stream yet
-TIMEOUT
-stream after timeout: none

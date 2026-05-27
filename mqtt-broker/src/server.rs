@@ -85,9 +85,52 @@ pub async fn start_broker(state: Arc<BrokerState>) -> anyhow::Result<BrokerHandl
                     }
                 }
                 crate::BrokerMessage::ClientDisconnected { client_id, clean_session } => {
-                    // Handle will message
+                    // Handle will message: publish it to subscribers
                     if let Some((_, will)) = bg_state.wills.remove(&client_id) {
-                        info!("Delivering will message for client={}", client_id);
+                        info!("Delivering will message for client={}: topic={}", client_id, will.topic);
+
+                        // Find subscribers for the will topic
+                        let subscribers = bg_state.subscriptions.lock().unwrap().lookup(&will.topic);
+                        for sub in &subscribers {
+                            if let Some(tx) = bg_state.connections.get(&sub.client_id) {
+                                let publish_pkt = MqttPacket::V311(v3::types::MqttPacketV3::Publish(
+                                    v3::types::PublishPacket {
+                                        topic: will.topic.clone(),
+                                        payload: will.payload.clone(),
+                                        qos: mqtt_core::common::QoS::AtMostOnce,
+                                        retain: will.retain,
+                                        packet_id: None,
+                                    }
+                                ));
+                                if let Ok(encoded) = mqtt_core::codec::encode_packet(&publish_pkt) {
+                                    let _ = tx.send(encoded.to_vec());
+                                }
+                            }
+                        }
+
+                        // Also forward to web subscribers
+                        for sub in &subscribers {
+                            if let Some(entry) = bg_state.web_subscribers.get(&sub.client_id) {
+                                let payload_str = String::from_utf8_lossy(&will.payload);
+                                let json_msg = serde_json::json!({
+                                    "type": "will",
+                                    "topic": will.topic,
+                                    "payload": payload_str,
+                                    "qos": will.qos as u8,
+                                    "source_client": client_id,
+                                    "timestamp": chrono::Utc::now().to_rfc3339(),
+                                });
+                                let _ = entry.send(json_msg.to_string());
+                            }
+                        }
+
+                        // Handle retain
+                        if will.retain {
+                            bg_state.retained.insert(will.topic.clone(), RetainedMessage::new(
+                                will.topic.clone(), will.payload.clone(), will.qos,
+                            ));
+                        }
+
                         bg_state.persistence.send_event(PersistEvent::RemoveWill(client_id.clone()));
                     }
 
@@ -170,12 +213,30 @@ async fn handle_connection(
     };
 
     // Process CONNECT and get version
-    let (client_id, version, keep_alive, clean_session, username) = match packet {
+    let (client_id, version, keep_alive, clean_session, username, will_opt) = match packet {
         MqttPacket::V311(v3::types::MqttPacketV3::Connect(connect)) => {
-            (connect.client_id, ProtocolVersion::V311, connect.keep_alive, connect.clean_session, connect.username)
+            let will = connect.will.as_ref().map(|w| WillMessage {
+                client_id: String::new(), // filled below
+                topic: w.topic.clone(),
+                payload: w.message.clone(),
+                qos: w.qos,
+                retain: w.retain,
+                delay_interval: 0,
+                created_at: std::time::Instant::now(),
+            });
+            (connect.client_id, ProtocolVersion::V311, connect.keep_alive, connect.clean_session, connect.username, will)
         }
         MqttPacket::V5(v5::types::MqttPacketV5::Connect(connect)) => {
-            (connect.client_id, ProtocolVersion::V5, connect.keep_alive, connect.clean_start, connect.username)
+            let will = connect.will.as_ref().map(|w| WillMessage {
+                client_id: String::new(), // filled below
+                topic: w.topic.clone(),
+                payload: w.payload.clone(),
+                qos: w.qos,
+                retain: w.retain,
+                delay_interval: w.delay_interval,
+                created_at: std::time::Instant::now(),
+            });
+            (connect.client_id, ProtocolVersion::V5, connect.keep_alive, connect.clean_start, connect.username, will)
         }
         _ => {
             warn!("First packet is not CONNECT");
@@ -208,6 +269,20 @@ async fn handle_connection(
     );
     state.sessions.insert(client_id.clone(), session);
     state.metrics.lock().unwrap().increment_clients_connected();
+
+    // Store will message if provided in CONNECT
+    if let Some(mut will) = will_opt {
+        will.client_id = client_id.clone();
+        state.wills.insert(client_id.clone(), will.clone());
+        state.persistence.send_event(PersistEvent::SaveWill {
+            client_id: client_id.clone(),
+            topic: will.topic,
+            payload: will.payload,
+            qos: will.qos as i32,
+            retain: will.retain,
+            delay_interval: will.delay_interval,
+        });
+    }
 
     // Save session to persistence
     let proto_ver = match version {
@@ -489,6 +564,30 @@ async fn process_v3_packet(
                     qos: filter.qos as i32,
                 });
                 return_codes.push(filter.qos as u8);
+
+                // Send retained messages matching this subscription filter (MQTT-3.3.1-10)
+                let topic_filter = mqtt_core::common::TopicFilter::new(&filter.path);
+                for item in state.retained.iter() {
+                    if topic_filter.matches(&item.topic) {
+                        // Only send if payload is non-empty (empty = delete marker)
+                        if !item.payload.is_empty() {
+                            let publish_pkt = MqttPacket::V311(v3::types::MqttPacketV3::Publish(
+                                v3::types::PublishPacket {
+                                    topic: item.topic.clone(),
+                                    payload: item.payload.clone(),
+                                    qos: mqtt_core::common::QoS::AtMostOnce,
+                                    retain: true,
+                                    packet_id: None,
+                                }
+                            ));
+                            if let Ok(encoded) = mqtt_core::codec::encode_packet(&publish_pkt) {
+                                if let Some(tx) = state.connections.get(client_id) {
+                                    let _ = tx.send(encoded.to_vec());
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             let suback_codes: Vec<v3::types::SubAckReturnCode> = return_codes.iter()
@@ -647,6 +746,29 @@ async fn process_v5_packet(
                     qos: filter.qos as i32,
                 });
                 reason_codes.push(v5::types::ReasonCode::Success);
+
+                // Send retained messages matching this subscription filter (MQTT-3.3.1-10)
+                let topic_filter = mqtt_core::common::TopicFilter::new(&filter.path);
+                for item in state.retained.iter() {
+                    if topic_filter.matches(&item.topic) {
+                        if !item.payload.is_empty() {
+                            let publish_pkt = MqttPacket::V311(v3::types::MqttPacketV3::Publish(
+                                v3::types::PublishPacket {
+                                    topic: item.topic.clone(),
+                                    payload: item.payload.clone(),
+                                    qos: mqtt_core::common::QoS::AtMostOnce,
+                                    retain: true,
+                                    packet_id: None,
+                                }
+                            ));
+                            if let Ok(encoded) = mqtt_core::codec::encode_packet(&publish_pkt) {
+                                if let Some(tx) = state.connections.get(client_id) {
+                                    let _ = tx.send(encoded.to_vec());
+                                }
+                            }
+                        }
+                    }
+                }
             }
             state.metrics.lock().unwrap().subscriptions_active = state.subscriptions.lock().unwrap().count() as u64;
 
