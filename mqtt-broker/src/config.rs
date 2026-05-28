@@ -41,7 +41,7 @@ impl Default for BrokerConfig {
             tcp_host: "0.0.0.0".to_string(),
             tcp_port: 1883,
             web_host: "0.0.0.0".to_string(),
-            web_port: 8080,
+            web_port: 8081,
             max_packet_size: 10 * 1024 * 1024, // 10 MB
             max_qos: crate::QoS::ExactlyOnce,
             allow_anonymous: true,
@@ -91,7 +91,7 @@ port = 1883
 # Web management interface settings
 [web]
 host = "0.0.0.0"
-port = 8080
+port = 8081
 
 # Broker engine settings
 [broker]

@@ -31,11 +31,7 @@ function redirectToLogin() {
 function checkAuth() {
     const username = sessionStorage.getItem('web_username');
     const password = sessionStorage.getItem('web_password');
-    if (!username || !password) {
-        redirectToLogin();
-        return false;
-    }
-    return true;
+    return !!(username && password);
 }
 
 /**
@@ -43,11 +39,6 @@ function checkAuth() {
  * 自动附加 Authorization 头，遇到 401 跳转到登录页。
  */
 async function apiFetch(url, options = {}) {
-    if (!checkAuth()) {
-        // 如果没凭证，checkAuth 已经重定向了
-        throw new Error('未登录');
-    }
-
     const headers = {
         ...getAuthHeaders(),
         ...options.headers,
@@ -537,9 +528,6 @@ function initSubscribePage() {
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', () => {
-    // 检查是否有认证凭据，没有则跳转到登录页
-    if (!checkAuth()) return;
-
     // 立即拉取仪表盘数据（HTML 中的 0 会被覆盖）
     refreshDashboard();
     
