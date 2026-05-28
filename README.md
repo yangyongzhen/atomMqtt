@@ -8,6 +8,7 @@
 
 view blog : (AtomMQTT--使用Rust语音实现的轻量级高性能MQtt服务器)
 [https://blog.csdn.net/qq8864/article/details/161432518]
+
 ---
 
 ## 特性
@@ -295,8 +296,62 @@ RUST_LOG=mqtt_broker=debug,mqtt_web=debug cargo run -p mqtt-web
 
 ---
 
+## 集成测试
+
+项目根目录 `test/` 下提供了基于 Python 的集成测试脚本，覆盖认证、发布/订阅、保留消息、ACL 权限和离线消息队列等核心功能。
+
+### 环境准备
+
+```bash
+# 安装依赖
+pip install paho-mqtt
+```
+
+### 运行测试
+
+先确保 Broker 已启动，然后运行：
+
+```bash
+cd rust_mqtt_broker
+python test/test_mqtt.py
+```
+
+### 测试报告
+
+| 类别 | 测试用例 | 预期 | 结果 |
+|------|---------|------|------|
+| **认证** | 正确凭据 (admin:admin123) 连接 | 成功 (rc=0) | [PASS] |
+| | 错误密码 (wrongpass) 连接 | 拒绝 (rc=134) | [PASS] |
+| | 错误用户名 (nobody) 连接 | 拒绝 (rc=134) | [PASS] |
+| | 匿名连接 (无凭据) | 拒绝 (rc=135) | [PASS] |
+| | 仅用户名无密码 | 拒绝 (rc=134) | [PASS] |
+| **发布/订阅** | QoS 0 发布+订阅 | 消息可达 | [PASS] |
+| | QoS 1 发布+订阅 | 消息可达 (至少一次) | [PASS] |
+| | QoS 2 发布+订阅 | 消息可达 (恰好一次) | [PASS] |
+| | 多级通配符 `#` 订阅 | 匹配多层主题 | [PASS] |
+| | 单级通配符 `+` 订阅 | 匹配单层主题 | [PASS] |
+| **保留消息** | 发布保留消息并接收 | 新订阅即收 | [PASS] |
+| | 清除保留消息 | 清除后不再收到 | [PASS] |
+| **ACL** | testuser 发布 test/ (ACL allow) | 消息可达 | [PASS] |
+| | testuser 发布 secret/ (ACL deny) | 消息不可达 | [PASS] |
+| | testuser 订阅 test/# (无权限) | 订阅被拒 | [PASS] |
+| **离线队列** | clean_session=false + 离线消息 | 重连后收到 | [PASS] |
+
+> 测试基于 `config.toml` 默认配置：认证方式 `method = "file"`，ACL 方式 `method = "file"`，密码文件 `passwd`，ACL 规则文件 `acl.conf`。
+
+### 测试脚本说明
+
+`test/test_mqtt.py` 使用 `paho-mqtt` 库编写，每个测试用例通过 `threading.Event` 实现异步等待，超时控制为 8 秒/用例。测试使用的用户凭据：
+
+| 用户 | 密码 | 角色 |
+|------|------|------|
+| `admin` | `admin123` | 管理员（读写下放） |
+| `testuser` | `testpass` | 仅允许发布 `test/#` |
+
+---
+
 ## 许可证
 
 [MIT](./LICENSE)
 
-Copyright (c) 2025 AtomMQTT
+Copyright (c) 2026 AtomMQTT
