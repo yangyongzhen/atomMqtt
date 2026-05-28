@@ -13,7 +13,9 @@ use mqtt_broker::persistence::Persistence;
 mod api;
 mod models;
 
-use actix_web::{web, HttpResponse};
+use actix_web::HttpResponse;
+use actix_web::web;
+
 use actix_web::middleware::Next;
 use include_dir::{include_dir, Dir};
 
@@ -157,7 +159,16 @@ async fn web_auth_middleware(
 
     // Only protect /api/ routes
     if path.starts_with("/api/") {
-        let state = req.app_data::<web::Data<std::sync::Arc<mqtt_broker::BrokerState>>>().unwrap();
+        let state = match req.app_data::<web::Data<mqtt_broker::BrokerState>>() {
+            Some(s) => s,
+            None => {
+                tracing::error!("[auth_mw] web::Data<BrokerState> NOT FOUND in app_data!");
+                return Err(actix_web::error::InternalError::from_response(
+                    "Server config error",
+                    HttpResponse::InternalServerError().body("Server config error"),
+                ).into());
+            }
+        };
 
         if state.config.web_auth_enabled {
             use base64::Engine;
@@ -206,12 +217,15 @@ async fn web_auth_middleware(
 
 /// Start the web management server.
 async fn start_web_server(state: Arc<mqtt_broker::BrokerState>) -> anyhow::Result<()> {
-    use actix_web::{web, App, HttpServer, middleware};
+    use actix_web::{App, HttpServer, middleware};
 
     let addr = format!("{}:{}", state.config.web_host, state.config.web_port);
-    let state_data = web::Data::new(state);
 
     info!("Web management interface starting on http://{}", addr);
+
+    // Store as web::Data<BrokerState> — actix-web's standard pattern.
+    // The From<Arc<T>> impl extracts the inner Arc so it's NOT double-wrapped.
+    let state_data: web::Data<mqtt_broker::BrokerState> = web::Data::from(state);
 
     let server = HttpServer::new(move || {
         App::new()

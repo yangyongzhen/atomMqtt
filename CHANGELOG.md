@@ -52,6 +52,7 @@
 - 修复发布路径路由：Web API 发布的 `Publish` 消息现在通过 `BrokerHandle` 通道正确投递给后台路由器
 - 修复消息投递：后台路由器现在通过 `connections` 通道将 PUBLISH 包转发给 TCP 订阅者
 - 修复 WebSocket 订阅者注册：使用 `DashMap` 存储 Web 订阅者通道，Disconnect 时自动清理
+- 修复 API 500 错误：`web::Data<Arc<BrokerState>>` 类型不匹配导致所有 API 请求返回空响应 — 改用 `web::Data::from(state)` 创建单层 `Data<BrokerState>`，统一所有处理器签名
 
 ### 技术细节
 

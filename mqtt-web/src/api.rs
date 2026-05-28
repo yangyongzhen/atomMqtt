@@ -1,6 +1,5 @@
 //! REST API endpoints for the broker management interface.
 
-use std::sync::Arc;
 use actix_web::{web, get, post, delete, HttpResponse, Responder};
 use bytes::Buf;
 use serde::Deserialize;
@@ -12,14 +11,14 @@ use crate::models::*;
 
 /// GET /api/metrics - Broker metrics snapshot.
 #[get("/api/metrics")]
-pub async fn get_metrics(state: web::Data<Arc<BrokerState>>) -> impl Responder {
+pub async fn get_metrics(state: web::Data<BrokerState>) -> impl Responder {
     let snapshot = state.metrics.lock().unwrap().snapshot();
     HttpResponse::Ok().json(snapshot)
 }
 
 /// GET /api/broker/info - Broker general information.
 #[get("/api/broker/info")]
-pub async fn get_broker_info(state: web::Data<Arc<BrokerState>>) -> impl Responder {
+pub async fn get_broker_info(state: web::Data<BrokerState>) -> impl Responder {
     let metrics = state.metrics.lock().unwrap();
     let info = BrokerInfoResponse {
         version: env!("CARGO_PKG_VERSION").to_string(),
@@ -41,7 +40,7 @@ pub async fn get_broker_info(state: web::Data<Arc<BrokerState>>) -> impl Respond
 
 /// GET /api/clients - List all connected clients.
 #[get("/api/clients")]
-pub async fn get_clients(state: web::Data<Arc<BrokerState>>) -> impl Responder {
+pub async fn get_clients(state: web::Data<BrokerState>) -> impl Responder {
     let clients: Vec<ClientInfo> = state.sessions.iter()
         .filter(|entry| entry.connected)
         .map(|entry| {
@@ -61,7 +60,7 @@ pub async fn get_clients(state: web::Data<Arc<BrokerState>>) -> impl Responder {
 /// GET /api/clients/{client_id} - Detailed client info.
 #[get("/api/clients/{client_id}")]
 pub async fn get_client_detail(
-    state: web::Data<Arc<BrokerState>>,
+    state: web::Data<BrokerState>,
     path: web::Path<String>,
 ) -> impl Responder {
     let client_id = path.into_inner();
@@ -82,7 +81,7 @@ pub async fn get_client_detail(
 
 /// GET /api/subscriptions - List all subscriptions.
 #[get("/api/subscriptions")]
-pub async fn get_subscriptions(state: web::Data<Arc<BrokerState>>) -> impl Responder {
+pub async fn get_subscriptions(state: web::Data<BrokerState>) -> impl Responder {
     let subs: Vec<SubscriptionInfo> = state.subscriptions.lock().unwrap().all_subscriptions().into_iter().map(|s| {
         SubscriptionInfo {
             client_id: s.client_id,
@@ -95,7 +94,7 @@ pub async fn get_subscriptions(state: web::Data<Arc<BrokerState>>) -> impl Respo
 
 /// GET /api/retained - List all retained messages.
 #[get("/api/retained")]
-pub async fn get_retained_messages(state: web::Data<Arc<BrokerState>>) -> impl Responder {
+pub async fn get_retained_messages(state: web::Data<BrokerState>) -> impl Responder {
     let messages: Vec<RetainedMessageInfo> = state.retained.iter().map(|entry| {
         RetainedMessageInfo {
             topic: entry.topic.clone(),
@@ -110,7 +109,7 @@ pub async fn get_retained_messages(state: web::Data<Arc<BrokerState>>) -> impl R
 /// DELETE /api/retained/{topic} - Delete a retained message.
 #[delete("/api/retained/{topic}")]
 pub async fn delete_retained_message(
-    state: web::Data<Arc<BrokerState>>,
+    state: web::Data<BrokerState>,
     path: web::Path<String>,
 ) -> impl Responder {
     let topic = path.into_inner();
@@ -150,7 +149,7 @@ fn default_qos() -> u8 { 0 }
 
 #[post("/api/publish")]
 pub async fn publish_message(
-    state: web::Data<Arc<BrokerState>>,
+    state: web::Data<BrokerState>,
     body: web::Json<PublishRequest>,
 ) -> impl Responder {
     let qos = QoS::from_u8(body.qos).unwrap_or(QoS::AtMostOnce);
@@ -193,11 +192,9 @@ pub async fn publish_message(
 pub async fn ws_subscribe(
     req: actix_web::HttpRequest,
     body: actix_web::web::Payload,
-    state: actix_web::web::Data<std::sync::Arc<mqtt_broker::BrokerState>>,
+    state: actix_web::web::Data<mqtt_broker::BrokerState>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let (response, session, msg_stream) = actix_ws::handle(&req, body)?;
-
-    let state = state.get_ref().clone();
 
     // Use actix_web::rt::spawn (the officially recommended pattern for WS handlers)
     actix_web::rt::spawn(handle_ws_session(state, session, msg_stream));
@@ -207,7 +204,7 @@ pub async fn ws_subscribe(
 
 /// Handle WebSocket session: subscribe/unsubscribe commands and forward publishes.
 async fn handle_ws_session(
-    state: std::sync::Arc<mqtt_broker::BrokerState>,
+    state: actix_web::web::Data<mqtt_broker::BrokerState>,
     mut session: actix_ws::Session,
     mut msg_stream: actix_ws::MessageStream,
 ) {
@@ -317,7 +314,7 @@ async fn handle_ws_session(
 /// POST /api/clients/{client_id}/disconnect - Force disconnect a client.
 #[post("/api/clients/{client_id}/disconnect")]
 pub async fn disconnect_client(
-    state: web::Data<Arc<BrokerState>>,
+    state: web::Data<BrokerState>,
     path: web::Path<String>,
 ) -> impl Responder {
     let client_id = path.into_inner();
@@ -345,7 +342,7 @@ pub struct LoginRequest {
 /// Returns 200 on success (without WWW-Authenticate header, so the browser
 /// won't show its native auth dialog). Returns 401 on failure.
 pub async fn login(
-    state: web::Data<Arc<BrokerState>>,
+    state: web::Data<BrokerState>,
     body: web::Json<LoginRequest>,
 ) -> impl Responder {
     if !state.config.web_auth_enabled {
@@ -374,10 +371,9 @@ pub async fn login(
 pub async fn ws_mqtt(
     req: actix_web::HttpRequest,
     body: actix_web::web::Payload,
-    state: actix_web::web::Data<std::sync::Arc<mqtt_broker::BrokerState>>,
+    state: actix_web::web::Data<mqtt_broker::BrokerState>,
 ) -> Result<actix_web::HttpResponse, actix_web::Error> {
     let (response, session, msg_stream) = actix_ws::handle(&req, body)?;
-    let state = state.get_ref().clone();
 
     actix_web::rt::spawn(async move {
         if let Err(e) = handle_ws_mqtt_session(state, session, msg_stream).await {
@@ -394,7 +390,7 @@ pub async fn ws_mqtt(
 /// but reads/writes binary MQTT packets through WebSocket frames instead
 /// of a TcpStream.
 async fn handle_ws_mqtt_session(
-    state: std::sync::Arc<mqtt_broker::BrokerState>,
+    state: actix_web::web::Data<mqtt_broker::BrokerState>,
     mut session: actix_ws::Session,
     mut msg_stream: actix_ws::MessageStream,
 ) -> anyhow::Result<()> {
@@ -455,7 +451,7 @@ async fn handle_ws_mqtt_session(
 
 /// Process MQTT packets after the CONNECT has been fully decoded.
 async fn handle_connect_after_decode(
-    state: std::sync::Arc<mqtt_broker::BrokerState>,
+    state: actix_web::web::Data<mqtt_broker::BrokerState>,
     mut session: actix_ws::Session,
     mut msg_stream: actix_ws::MessageStream,
     mut buf: bytes::BytesMut,
