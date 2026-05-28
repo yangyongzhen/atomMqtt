@@ -245,12 +245,46 @@ user1:pass1
 sensor:token123
 ```
 
-### 8.3 授权
+### 8.3 授权 — ACL 文件访问控制
 
-当前实现授权全部放行：
+基于 ACL 规则文件的 topic 级别访问控制，默认拒绝，首条匹配规则生效。
+
 ```rust
-fn authorize_publish(username, topic) -> true;   // 始终允许
-fn authorize_subscribe(username, topic) -> true; // 始终允许
+fn authorize(username: &str, topic: &str, action: &str) -> bool {
+    let rules = load_acl("acl.conf");
+    for rule in rules {
+        if rule.matches(username, topic, action) {
+            return rule.action == "allow";
+        }
+    }
+    false // 默认拒绝
+}
 ```
 
-扩展计划：引入基于 ACL 的 topic 级别访问控制。
+**ACL 规则文件 `acl.conf` 格式**：
+
+每行格式：`user topic publish|subscribe|readwrite`
+
+- `user` — 用户名，`*` 表示匹配所有用户
+- `topic` — 主题过滤器，支持 `+` 和 `#` 通配符
+- `publish` — 允许发布到该主题
+- `subscribe` — 允许订阅该主题
+- `readwrite` — 允许发布和订阅
+
+```
+# acl.conf — ACL 规则文件
+# 格式: user topic publish|subscribe|readwrite
+# 默认拒绝，第一条匹配规则生效
+
+admin # readwrite        # 管理员可发布和订阅所有主题
+sensor temperature/# publish   # sensor 用户可发布 temperature 下的所有子主题
+client house/+/temp subscribe  # client 用户可订阅 house/任意房间/temp
+* test/# subscribe       # 所有用户可订阅 test/ 下的主题
+```
+
+**匹配规则**：
+1. 逐条从上至下匹配
+2. 用户名和主题均匹配时，按指定动作（publish/subscribe/readwrite）判定
+3. 首条匹配规则生效（allow 或 deny）
+4. 无匹配规则时默认拒绝
+5. 动作不匹配视为拒绝（如规则为 publish，尝试 subscribe 则拒绝）

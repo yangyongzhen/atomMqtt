@@ -329,6 +329,7 @@ Web 管理界面是典型的 **Server-Side API + Client-Side SPA** 模式：
 | 最大包大小 | `max_packet_size` | 10 MB |
 | Keep Alive 超时 | 协议字段 | 客户端声明 |
 | 连接数限制 | 无硬限制（依赖 OS） | — |
+| ACL 访问控制 | `acl_file` | 允许所有（无认证时） |
 
 ### 7.3 优雅关闭
 
@@ -341,6 +342,62 @@ state.persistence.send(PersistEvent::Shutdown);
 ```
 
 确保 Broker 关闭时不会丢失最近 <100ms 的状态变更。
+
+### 7.4 ACL Topic 访问控制
+
+AtomMQTT 支持基于文件配置的 ACL（Access Control List）规则，用于限制特定客户端对 Topic 的发布与订阅权限。
+
+**ACL 配置文件格式**：
+
+```
+# 用户规则
+user alice
+topic write sensor/#
+topic read home/+/temperature
+
+user bob
+topic readwrite garden/#
+
+# 匿名规则
+user anonymous
+topic read $SYS/#
+
+# 默认拒绝
+topic deny all
+```
+
+**权限类型**：
+
+| 权限 | 含义 |
+|------|------|
+| `read` | 允许订阅该主题（SUBSCRIBE） |
+| `write` | 允许发布该主题（PUBLISH） |
+| `readwrite` | 同时允许订阅和发布 |
+
+**匹配逻辑**：
+1. Broker 优先匹配客户端用户名对应的 `user` 规则块
+2. 若未匹配到用户名规则，则匹配 `user anonymous` 匿名规则
+3. ACL 规则中的主题支持 `+` 和 `#` 通配符，与 MQTT 订阅语义一致
+4. 规则遵循**首次匹配**原则——一旦匹配到允许或拒绝规则，立即生效
+5. 若没有任何规则匹配，则执行**默认拒绝**策略（Deny All）
+
+**文件配置路径**：通过 Broker 配置项 `acl_file` 指定 ACL 文件路径。若未配置此选项，默认允许所有操作（兼容无认证模式）。
+
+```rust
+// ACL 检查核心逻辑
+fn check_acl(acl: &AclConfig, client_id: &str, topic: &str, 
+             access: AccessKind) -> Result<(), AclError> {
+    // 1. 查找匹配的用户规则
+    // 2. 在规则中对 topic 进行通配符匹配
+    // 3. 首次匹配命中则返回 Allow/Deny
+    // 4. 无匹配则默认拒绝
+}
+```
+
+**应用场景**：
+- 多租户场景下隔离不同用户的 Topic 空间
+- 系统主题 `$SYS/#` 只允许特定管理客户端发布
+- 传感器数据只写不读，控制指令只读不写
 
 ---
 

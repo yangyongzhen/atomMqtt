@@ -1,12 +1,73 @@
 # Web API 文档
 
 > **版本**: 0.1.0  
-> **基础 URL**: `http://localhost:8080`  
+> **基础 URL**: `http://localhost:8081`  
 > **更新**: 2025-01-15
 
 ---
 
 ## 1. REST API
+
+### 1.0 用户登录
+
+```
+POST /api/login
+Content-Type: application/json
+```
+
+**请求**:
+```json
+{
+  "username": "admin",
+  "password": "your_password"
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `username` | string | 是 | 用户名 |
+| `password` | string | 是 | 密码 |
+
+**响应**:
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**说明**:
+- 登录成功后返回 JWT 令牌，需在后续请求的 `Authorization` 头中携带
+- 令牌有效期默认为 24 小时
+
+---
+
+### 1.0.1 API 认证说明
+
+除 `/api/login` 外，所有 REST API 请求需要在 HTTP 头中携带 JWT 令牌进行认证：
+
+```
+Authorization: Bearer <token>
+```
+
+**认证流程**:
+1. 调用 `POST /api/login` 获取 JWT 令牌
+2. 在后续请求的 `Authorization` 头中携带该令牌
+3. 服务端验证令牌有效性后处理请求
+
+**令牌校验规则**:
+- 令牌过期（默认 24 小时）→ 返回 `401 Unauthorized`
+- 令牌无效或签名错误 → 返回 `401 Unauthorized`
+- 未携带令牌 → 返回 `401 Unauthorized`
+
+**ACL 访问控制**:
+- 每个用户关联一组 ACL 规则，控制其对主题的发布和订阅权限
+- 发布操作需主题具有 `write` 权限
+- 订阅操作需主题具有 `read` 权限
+- ACL 规则支持 MQTT 通配符（`+` / `#`），灵活匹配主题范围
+- 未配置 ACL 规则默认拒绝所有操作
+
+---
 
 ### 1.1 获取 Broker 指标
 
@@ -52,7 +113,7 @@ GET /api/metrics
 ### 1.2 获取 Broker 信息
 
 ```
-GET /api/info
+GET /api/broker/info
 ```
 
 **响应**:
@@ -65,9 +126,9 @@ GET /api/info
     "tcp_host": "0.0.0.0",
     "tcp_port": 1883,
     "web_host": "0.0.0.0",
-    "web_port": 8080,
+    "web_port": 8081,
     "max_packet_size": 10485760,
-    "allow_anonymous": true,
+    "allow_anonymous": false,
     "session_expiry_interval": 3600
   },
   "protocol_versions": ["MQTT 3.1.1", "MQTT 5.0"]
@@ -228,12 +289,33 @@ POST /api/clients/{client_id}/disconnect
 
 ---
 
+### 1.9 删除保留消息
+
+```
+DELETE /api/retained/{topic}
+```
+
+**响应**:
+```json
+{
+  "success": true,
+  "topic": "sensor/config"
+}
+```
+
+**说明**:
+- 删除指定主题的保留消息
+- 如果主题不存在保留消息，仍返回 `success: true`
+- 删除后新订阅者将不再收到该主题的保留消息
+
+---
+
 ## 2. WebSocket API
 
 ### 2.1 连接
 
 ```
-ws://localhost:8080/ws/subscribe
+ws://localhost:8081/ws/subscribe
 ```
 
 建立连接后，服务器会发送欢迎消息：

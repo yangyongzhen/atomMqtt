@@ -21,6 +21,8 @@
 - ✅ **WebSocket 订阅** — 浏览器可直接订阅 MQTT 主题，接收实时消息
 - ✅ **REST API** — 提供完整的 HTTP API 用于发布消息、管理客户端
 - ✅ **匿名/文件认证** — 支持无认证和基于文件的密码认证
+- ✅ **ACL Topic 访问控制** — 基于文件的 publish/subscribe/readwrite 权限管理
+- ✅ **Web 管理界面认证** — HTTP Basic Auth + JSON 登录页面双重认证
 - ✅ **CLI 客户端** — 内置 `mqtt-client` 工具，支持发布/订阅/交互式 Shell
 - ✅ **性能指标** — 内置计数器（连接数、消息数、字节数、包数等）
 
@@ -63,12 +65,23 @@ rust_mqtt_broker/
 │   │   └── models.rs          #   响应模型
 │   ├── static/                #   前端静态文件
 │   │   ├── index.html         #   主页面
+│   │   ├── login.html         #   登录页面
 │   │   ├── css/dashboard.css  #   样式
 │   │   └── js/dashboard.js    #   交互逻辑
 │   └── Cargo.toml
-└── mqtt-client/               # CLI 测试客户端
-    ├── src/main.rs            # 发布/订阅/Shell 模式
-    └── Cargo.toml
+├── mqtt-client/               # CLI 测试客户端
+│   ├── src/main.rs            # 发布/订阅/Shell 模式
+│   └── Cargo.toml
+├── Doc/                       # 文档
+│   ├── architecture.md        # 架构设计
+│   ├── article.md             # 原理与实现
+│   ├── message-routing.md     # 消息路由机制
+│   ├── protocol-support.md    # MQTT 协议支持
+│   └── web-api.md             # Web API 文档
+├── config.toml                # Broker 配置文件
+├── passwd                     # 密码文件（认证用）
+├── acl.conf                   # ACL 规则文件
+└── CHANGELOG.md               # 更新日志
 ```
 
 ---
@@ -106,7 +119,7 @@ cargo run -p mqtt-web --release
 
 启动后：
 - MQTT TCP 监听：`tcp://0.0.0.0:1883`
-- Web 管理界面：`http://localhost:8080`
+- Web 管理界面：`http://localhost:8081`
 - 数据库文件：`broker.db`（自动创建于运行目录）
 
 > **注意**：数据库文件 `broker.db` 在首次启动时自动创建，使用 WAL 模式提升并发性能。
@@ -128,7 +141,12 @@ cargo run -p mqtt-client -- shell 127.0.0.1:1883 --client-id my-shell
 
 ## Web 管理界面
 
-打开 `http://localhost:8080`，可以看到以下功能页面：
+打开 `http://localhost:8081`，首先进入登录页面：
+
+- **默认用户名**: `admin`
+- **默认密码**: `admin`
+
+登录后可以看到以下功能页面：
 
 | 页面 | 功能 |
 |------|------|
@@ -151,12 +169,14 @@ cargo run -p mqtt-client -- shell 127.0.0.1:1883 --client-id my-shell
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
+| `POST` | `/api/login` | 用户登录（JSON）|
 | `GET` | `/api/metrics` | 获取 Broker 指标快照 |
-| `GET` | `/api/info` | 获取 Broker 配置和版本信息 |
+| `GET` | `/api/broker/info` | 获取 Broker 配置和版本信息 |
 | `GET` | `/api/clients` | 获取所有在线客户端 |
 | `GET` | `/api/clients/{client_id}` | 获取单个客户端详情 |
 | `GET` | `/api/subscriptions` | 获取所有活跃订阅 |
 | `GET` | `/api/retained` | 获取所有保留消息 |
+| `DELETE` | `/api/retained/{topic}` | 删除指定保留消息 |
 | `POST` | `/api/publish` | 发布消息到主题 |
 | `POST` | `/api/clients/{client_id}/disconnect` | 断开指定客户端 |
 
@@ -164,7 +184,10 @@ cargo run -p mqtt-client -- shell 127.0.0.1:1883 --client-id my-shell
 
 | 路径 | 协议 | 说明 |
 |------|------|------|
-| `ws://host:8080/ws/subscribe` | JSON | 实时订阅 MQTT 主题消息 |
+| `ws://host:8081/ws/subscribe` | JSON | 实时订阅 MQTT 主题消息 |
+| `ws://host:8081/mqtt` | 二进制 MQTT 包 | 原生 WebSocket-MQTT 桥接 |
+
+> **认证**：所有 `/api/` 路由受 HTTP Basic Auth 保护。前端通过登录页面获取验证，后续请求自动携带认证凭据。`POST /api/login` 端点免认证。
 
 #### WebSocket JSON 命令
 
@@ -199,21 +222,35 @@ cargo run -p mqtt-client -- shell 127.0.0.1:1883 --client-id my-shell
 
 ## 配置
 
-当前使用默认配置启动。可通过修改 `mqtt_broker::config::BrokerConfig` 调整：
+Broker 通过 `config.toml` 配置文件读取设置。首次启动时自动生成默认配置。示例：
 
-```rust
-BrokerConfig {
-    tcp_host: "0.0.0.0".to_string(),            // MQTT 监听地址
-    tcp_port: 1883,                               // MQTT 端口
-    web_host: "0.0.0.0".to_string(),              // Web 监听地址
-    web_port: 8080,                               // Web 端口
-    max_packet_size: 10 * 1024 * 1024,            // 最大包大小 (10MB)
-    max_qos: QoS::ExactlyOnce,                    // 最大支持 QoS
-    allow_anonymous: true,                        // 允许匿名连接
-    auth_method: AuthMethod::None,                // 认证方式
-    session_expiry_interval: 3600,                // 会话过期时间 (秒)
-    persistence_path: None,                       // SQLite 数据库路径 (None = broker.db)
-}
+```toml
+[tcp]
+host = "0.0.0.0"
+port = 1883
+
+[web]
+host = "0.0.0.0"
+port = 8081
+
+[broker]
+max_packet_size = 10485760    # 10 MB
+max_qos = 2                    # ExactlyOnce
+allow_anonymous = false
+session_expiry_interval = 3600
+
+[auth]
+method = "file"                # "none" 或 "file"
+auth_file = "passwd"
+
+[web_auth]
+enabled = true
+username = "admin"
+password = "admin"
+
+[acl]
+method = "file"                # "none" 或 "file"
+acl_file = "acl.conf"
 ```
 
 ### 持久化存储

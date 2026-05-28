@@ -149,7 +149,7 @@ mqtt-broker/src/
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `config` | `BrokerConfig` | 配置（只读） |
+| `config` | `BrokerConfig` | 配置（只读，从 `config.toml` 加载） |
 | `sessions` | `DashMap<String, SessionState>` | 活跃会话 |
 | `subscriptions` | `Mutex<SubscriptionTree>` | 订阅树 |
 | `retained` | `DashMap<String, RetainedMessage>` | 保留消息 |
@@ -250,14 +250,17 @@ async fn serve_embedded_file(req: actix_web::HttpRequest) -> HttpResponse {
 | 路由 | 处理器 | 说明 |
 |------|--------|------|
 | `GET /api/metrics` | `get_metrics` | 指标快照 |
-| `GET /api/info` | `get_broker_info` | Broker 信息 |
+| `GET /api/broker/info` | `get_broker_info` | Broker 信息 |
 | `GET /api/clients` | `get_clients` | 客户端列表 |
 | `GET /api/clients/{id}` | `get_client_detail` | 客户端详情 |
 | `GET /api/subscriptions` | `get_subscriptions` | 订阅列表 |
 | `GET /api/retained` | `get_retained_messages` | 保留消息 |
+| `POST /api/login` | `login` | 用户登录（JWT 认证） |
 | `POST /api/publish` | `publish_message` | 发布消息 |
 | `POST /api/clients/{id}/disconnect` | `disconnect_client` | 断开客户端 |
+| `DELETE /api/retained/{topic}` | `delete_retained` | 删除指定保留消息 |
 | `GET /ws/subscribe` | `ws_subscribe` | WebSocket 订阅 |
+| `GET /mqtt` | `ws_mqtt_bridge` | WebSocket MQTT 桥接（直接 MQTT 协议代理） |
 
 ---
 
@@ -406,7 +409,8 @@ Broker 启动
 
 - `#![deny(unsafe_code)]` — 全程无 unsafe Rust
 - 包大小限制 — `max_packet_size` 配置防 DoS
-- 认证机制 — 支持匿名和文件密码认证
+- 认证机制 — 支持匿名、文件密码认证和 JWT 令牌认证
+- ACL 访问控制 — 支持基于客户端 ID 和用户名的发布/订阅权限控制，可在 `config.toml` 中配置 ACL 规则，限制特定主题的访问范围
 - 会话过期 — Keep Alive 超时检测
 
 ---
